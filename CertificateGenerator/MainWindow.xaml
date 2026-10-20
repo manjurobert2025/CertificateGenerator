@@ -1,0 +1,230 @@
+﻿<Window x:Class="CertificateGenerator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Certificate Generator"
+        Height="750"
+        Width="1100"
+        MinHeight="650"
+        MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F4F6FA">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0"
+                Background="#172554">
+
+            <StackPanel Margin="18">
+
+                <TextBlock Text="CERTIFICATE"
+                           Foreground="White"
+                           FontSize="19"
+                           FontWeight="Bold"
+                           Margin="0,15,0,4"/>
+
+                <TextBlock Text="GENERATOR"
+                           Foreground="#93C5FD"
+                           FontSize="13"
+                           Margin="0,0,0,35"/>
+
+                <Button Content="Dashboard"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"/>
+
+                <Button Content="Generate Certificate"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        Click="GenerateCertificate_Click"/>
+
+                <Button Content="Bulk Generation"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        Click="BulkGeneration_Click"/>
+
+                <Button Content="Certificate History"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        Click="CertificateHistory_Click"/>
+
+                <Button Content="Template Designer"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        Click="TemplateDesigner_Click"/>
+                <Button Content="My Templates"
+        Margin="0,5"
+        Padding="12"
+        HorizontalContentAlignment="Left"
+        Click="MyTemplates_Click"/>
+
+                <Button Content="Organization Settings"
+                        Margin="0,5"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"/>
+
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Column="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel Margin="32">
+
+                <!-- Page Heading -->
+                <TextBlock Text="Certificate Generator"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#172554"/>
+
+                <TextBlock Text="Create, customize and manage certificates."
+                           FontSize="14"
+                           Foreground="#64748B"
+                           Margin="0,8,0,28"/>
+
+                <!-- Dashboard Statistics -->
+                <UniformGrid Columns="2"
+                             Margin="0,0,0,25">
+
+                    <Border Background="White"
+                            CornerRadius="10"
+                            Padding="22"
+                            Margin="0,0,12,12">
+
+                        <StackPanel>
+                            <TextBlock Text="TOTAL CERTIFICATES"
+                                       Foreground="#64748B"
+                                       FontSize="12"/>
+
+                            <TextBlock x:Name="TotalCertificatesTextBlock"
+                                       Text="0"
+                                       FontSize="32"
+                                       FontWeight="Bold"
+                                       Foreground="#2563EB"
+                                       Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            CornerRadius="10"
+                            Padding="22"
+                            Margin="0,0,0,12">
+
+                        <StackPanel>
+                            <TextBlock Text="AVAILABLE TEMPLATES"
+                                       Foreground="#64748B"
+                                       FontSize="12"/>
+
+                            <TextBlock x:Name="AvailableTemplatesTextBlock"
+           Text="0"
+           FontSize="32"
+           FontWeight="Bold"
+           Foreground="#15803D"
+           Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                </UniformGrid>
+
+                <!-- Quick Actions -->
+                <Border Background="White"
+                        CornerRadius="10"
+                        Padding="24">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Quick Actions"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,16"/>
+
+                        <Button Content="Generate a Certificate"
+                                Height="45"
+                                Margin="0,5"
+                                HorizontalContentAlignment="Left"
+                                Padding="14"
+                                Click="GenerateCertificate_Click"/>
+
+                        <Button Content="Generate Certificates from CSV"
+                                Height="45"
+                                Margin="0,5"
+                                HorizontalContentAlignment="Left"
+                                Padding="14"
+                                Click="BulkGeneration_Click"/>
+
+                        <Button Content="Design a Certificate Template"
+                                Height="45"
+                                Margin="0,5"
+                                HorizontalContentAlignment="Left"
+                                Padding="14"
+                                Click="TemplateDesigner_Click"/>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- Recent Certificates -->
+                <Border Background="White"
+                        CornerRadius="10"
+                        Padding="24"
+                        Margin="0,20,0,20">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Recent Certificates"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="#172554"
+                                   Margin="0,0,0,16"/>
+
+                        <DataGrid x:Name="RecentCertificatesDataGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  HeadersVisibility="Column"
+                                  Height="200">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn
+                                    Header="Certificate ID"
+                                    Binding="{Binding CertificateId}"
+                                    Width="150"/>
+
+                                <DataGridTextColumn
+                                    Header="Recipient"
+                                    Binding="{Binding RecipientName}"
+                                    Width="*"/>
+
+                                <DataGridTextColumn
+                                    Header="Course"
+                                    Binding="{Binding CourseName}"
+                                    Width="*"/>
+
+                                <DataGridTextColumn
+                                    Header="Issue Date"
+                                    Binding="{Binding IssueDate,
+                                    StringFormat={}{0:dd-MM-yyyy}}"
+                                    Width="110"/>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

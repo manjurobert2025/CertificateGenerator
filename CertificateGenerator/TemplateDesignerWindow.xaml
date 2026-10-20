@@ -1,0 +1,336 @@
+﻿<Window x:Class="CertificateGenerator.TemplateDesignerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Certificate Template Designer"
+        Height="760"
+        Width="1250"
+        MinHeight="650"
+        MinWidth="1000"
+        WindowStartupLocation="CenterOwner"
+        Background="#F4F6FA">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT: DESIGN SETTINGS -->
+        <ScrollViewer Grid.Column="0"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="0,0,18,0">
+
+            <StackPanel>
+                <TextBlock Text="Template Designer"
+                           FontSize="25"
+                           FontWeight="Bold"
+                           Foreground="#172554"/>
+
+                <TextBlock Text="Customize your certificate"
+                           Foreground="#64748B"
+                           Margin="0,6,0,18"/>
+
+                <Border Background="White"
+                        CornerRadius="10"
+                        Padding="16">
+
+                    <StackPanel>
+
+                        <TextBlock Text="Choose Design"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <ComboBox x:Name="TemplateComboBox"
+                                  SelectedIndex="0"
+                                  SelectionChanged="TemplateComboBox_SelectionChanged"
+                                  Margin="0,0,0,16">
+
+                            <ComboBoxItem Content="Classic Gold"/>
+                            <ComboBoxItem Content="Modern Blue"/>
+                            <ComboBoxItem Content="Elegant Green"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Certificate Title"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <TextBox x:Name="TitleTextBox"
+                                 Text="CERTIFICATE OF ACHIEVEMENT"
+                                 Padding="8"
+                                 TextChanged="Settings_TextChanged"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock Text="Subtitle"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <TextBox x:Name="SubtitleTextBox"
+                                 Text="This certificate is proudly presented to"
+                                 Padding="8"
+                                 TextChanged="Settings_TextChanged"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock Text="Organization Name"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <TextBox x:Name="OrganizationTextBox"
+                                 Text="Your Organization"
+                                 Padding="8"
+                                 TextChanged="Settings_TextChanged"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock Text="Footer Text"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <TextBox x:Name="FooterTextBox"
+                                 Text="Congratulations on your achievement!"
+                                 Padding="8"
+                                 TextChanged="Settings_TextChanged"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock Text="Accent Color"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <ComboBox x:Name="AccentColorComboBox"
+                                  SelectedIndex="0"
+                                  SelectionChanged="Settings_TextChanged"
+                                  Margin="0,0,0,16">
+
+                            <ComboBoxItem Content="Gold"/>
+                            <ComboBoxItem Content="Blue"/>
+                            <ComboBoxItem Content="Green"/>
+                            <ComboBoxItem Content="Purple"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Organization Logo"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+
+                        <Button Content="Choose Logo Image"
+                                Padding="10"
+                                Click="ChooseLogo_Click"/>
+
+                        <TextBlock x:Name="LogoPathTextBlock"
+                                   Text="No logo selected"
+                                   Foreground="#64748B"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,16"/>
+
+                        <Button Content="Save Template"
+                                Background="#15803D"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                Padding="12"
+                                Click="SaveTemplate_Click"/>
+
+                        <TextBlock x:Name="StatusTextBlock"
+                                   Foreground="#15803D"
+                                   TextWrapping="Wrap"
+                                   Margin="0,10,0,0"/>
+
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- RIGHT: DRAG-AND-DROP DESIGN CANVAS -->
+        <Grid Grid.Column="1">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,12">
+
+                <TextBlock Text="Certificate Design Canvas"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="#172554"/>
+
+                <TextBlock Text="Click and drag any element to reposition it."
+                           Foreground="#64748B"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <Border x:Name="PreviewBorder"
+        Grid.Row="1"
+        Background="#E2E8F0"
+        Padding="10"
+        CornerRadius="8">
+
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+
+                    <Canvas x:Name="DesignCanvas"
+                            Width="800"
+                            Height="565"
+                            Background="White"
+                            ClipToBounds="True">
+
+                        <!-- CERTIFICATE BORDER -->
+                        <Border Canvas.Left="15"
+                                Canvas.Top="15"
+                                Width="770"
+                                Height="535"
+                                BorderBrush="#D4AF37"
+                                BorderThickness="5"
+                                IsHitTestVisible="False"/>
+
+                        <!-- ORGANIZATION LOGO -->
+                        <Image x:Name="LogoImage"
+                               Canvas.Left="340"
+                               Canvas.Top="35"
+                               Width="120"
+                               Height="55"
+                               Stretch="Uniform"
+                               Cursor="SizeAll"
+                               Tag="Logo"
+                               MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                               MouseMove="DesignElement_MouseMove"
+                               MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- ORGANIZATION NAME -->
+                        <TextBlock x:Name="PreviewOrganizationTextBlock"
+                                   Text="Your Organization"
+                                   Canvas.Left="200"
+                                   Canvas.Top="100"
+                                   Width="400"
+                                   TextAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Organization"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- CERTIFICATE TITLE -->
+                        <TextBlock x:Name="PreviewTitleTextBlock"
+                                   Text="CERTIFICATE OF ACHIEVEMENT"
+                                   Canvas.Left="100"
+                                   Canvas.Top="155"
+                                   Width="600"
+                                   TextAlignment="Center"
+                                   FontSize="26"
+                                   FontWeight="Bold"
+                                   Foreground="#D4AF37"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Title"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- SUBTITLE -->
+                        <TextBlock x:Name="PreviewSubtitleTextBlock"
+                                   Text="This certificate is proudly presented to"
+                                   Canvas.Left="150"
+                                   Canvas.Top="225"
+                                   Width="500"
+                                   TextAlignment="Center"
+                                   FontSize="15"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Subtitle"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- RECIPIENT NAME -->
+                        <TextBlock x:Name="PreviewRecipientTextBlock"
+                                   Text="Anu Thomas"
+                                   Canvas.Left="150"
+                                   Canvas.Top="270"
+                                   Width="500"
+                                   TextAlignment="Center"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Foreground="#B8860B"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Recipient"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- COURSE NAME -->
+                        <TextBlock x:Name="PreviewCourseTextBlock"
+                                   Text="For successfully completing C# Programming"
+                                   Canvas.Left="125"
+                                   Canvas.Top="330"
+                                   Width="550"
+                                   TextAlignment="Center"
+                                   FontSize="18"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Course"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- ISSUE DATE -->
+                        <TextBlock x:Name="PreviewDateTextBlock"
+                                   Text="Date: 19 October 2026"
+                                   Canvas.Left="250"
+                                   Canvas.Top="385"
+                                   Width="300"
+                                   TextAlignment="Center"
+                                   FontSize="13"
+                                   Cursor="SizeAll"
+                                   Tag="Date"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- FOOTER -->
+                        <TextBlock x:Name="PreviewFooterTextBlock"
+                                   Text="Congratulations on your achievement!"
+                                   Canvas.Left="150"
+                                   Canvas.Top="440"
+                                   Width="500"
+                                   TextAlignment="Center"
+                                   FontSize="13"
+                                   TextWrapping="Wrap"
+                                   Cursor="SizeAll"
+                                   Tag="Footer"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                        <!-- CERTIFICATE ID -->
+                        <TextBlock x:Name="PreviewCertificateIdTextBlock"
+                                   Text="Certificate ID: CERT-2026-00001"
+                                   Canvas.Left="250"
+                                   Canvas.Top="485"
+                                   Width="300"
+                                   TextAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="#64748B"
+                                   Cursor="SizeAll"
+                                   Tag="CertificateId"
+                                   MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+                                   MouseMove="DesignElement_MouseMove"
+                                   MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+
+                    </Canvas>
+                </ScrollViewer>
+            </Border>
+
+            <TextBlock Grid.Row="2"
+                       Text="Drag elements to arrange the layout. Position saving and PDF integration come next."
+                       Foreground="#64748B"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Margin="0,10,0,0"/>
+
+        </Grid>
+    </Grid>
+</Window>
