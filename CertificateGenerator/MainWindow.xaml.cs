@@ -141,6 +141,53 @@ namespace CertificateGenerator
             historyWindow.ShowDialog();
         }
 
+
+        private void BulkPdfExport_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            var csvDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select Recipient CSV File",
+                Filter = "CSV Files (*.csv)|*.csv"
+            };
+
+            if (csvDialog.ShowDialog() != true)
+                return;
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save Bulk Certificate ZIP",
+                Filter = "ZIP Files (*.zip)|*.zip",
+                FileName = "Certificates.zip"
+            };
+
+            if (saveDialog.ShowDialog() != true)
+                return;
+
+            try
+            {
+                int count = BulkCertificateExporter.ExportFromCsv(
+                    csvDialog.FileName,
+                    saveDialog.FileName);
+
+                MessageBox.Show(
+                    $"{count} certificates generated successfully!\n\n" +
+                    $"Saved to:\n{saveDialog.FileName}",
+                    "Bulk Export Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Bulk Export Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private void MyTemplates_Click(
     object sender, RoutedEventArgs e)
         {
