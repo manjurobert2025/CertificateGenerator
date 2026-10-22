@@ -11,35 +11,111 @@ namespace CertificateGenerator
         private CertificateRecord? _lastSavedCertificate;
         private string? _lastGeneratedPdfPath;
 
+
+        private SavedTemplate? SelectedTemplate =>
+            TemplatesComboBox.SelectedItem as SavedTemplate;
+
+        //public class SavedTemplate
+        //{
+        //    public string Name { get; set; } = "My Template";
+
+        //    public string FilePath { get; set; } = "";
+
+        //    public CertificateTemplateSettings Settings { get; set; }
+        //        = new CertificateTemplateSettings();
+        //}
+
+
+        private void LoadTemplates()
+        {
+            try
+            {
+                var templates = TemplateStorage.GetTemplates();
+
+                System.Windows.MessageBox.Show(
+                    string.Join("\n\n", templates.Select(t =>
+                        $"Name: {t.Name ?? "NULL"}\n" +
+                        $"File: {t.FilePath}\n" +
+                        $"Settings name: {t.Settings?.TemplateName ?? "NULL"}\n" +
+                        $"Custom elements: {t.Settings?.CustomTextElements?.Count ?? 0}")));
+
+                TemplatesComboBox.ItemsSource = null;
+                TemplatesComboBox.DisplayMemberPath = "Name";
+                TemplatesComboBox.ItemsSource = templates;
+
+                if (templates.Count > 0)
+                {
+                    TemplatesComboBox.ItemsSource = templates;
+                    TemplatesComboBox.DisplayMemberPath = "Name";
+
+                    // Select Test Template for this test if it exists;
+                    // otherwise select the first available template.
+                    var testIndex = templates.FindIndex(t =>
+                        string.Equals(
+                            t.Settings?.TemplateName,
+                            "Test Template",
+                            StringComparison.OrdinalIgnoreCase));
+
+                    TemplatesComboBox.SelectedIndex =
+                        testIndex >= 0 ? testIndex : 0;
+                }
+                else
+                {
+                    StatusTextBlock.Text =
+                        "No saved templates found. Create and save a template first.";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusTextBlock.Text =
+                    $"Error loading templates: {ex.Message}";
+            }
+        }
+
+
+
         public GenerateCertificateWindow()
         {
             InitializeComponent();
             CertificateDatePicker.SelectedDate = DateTime.Today;
+            LoadTemplates();
         }
 
         private void GenerateButton_Click(
             object sender, RoutedEventArgs e)
         {
+          
             string recipientName = RecipientNameTextBox.Text.Trim();
             string courseName = CourseNameTextBox.Text.Trim();
+           
+            var selectedTemplate = TemplatesComboBox.SelectedItem as SavedTemplate;
+            System.Windows.MessageBox.Show(
+     $"Selected item type: " +
+     $"{TemplatesComboBox.SelectedItem?.GetType().FullName ?? "NULL"}\n" +
+     $"Selected template name: " +
+     $"{selectedTemplate?.Name ?? "NULL"}\n" +
+     $"Settings template name: " +
+     $"{selectedTemplate?.Settings?.TemplateName ?? "NULL"}\n" +
+     $"Custom elements: " +
+     $"{selectedTemplate?.Settings?.CustomTextElements?.Count ?? 0}");
 
             if (string.IsNullOrWhiteSpace(recipientName))
             {
-                MessageBox.Show("Please enter the recipient name.");
+                System.Windows.MessageBox.Show("Please enter the recipient name.");
                 RecipientNameTextBox.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(courseName))
             {
-                MessageBox.Show("Please enter the course or event name.");
+                System.Windows.MessageBox.Show("Please enter the course or event name.");
                 CourseNameTextBox.Focus();
                 return;
             }
 
             if (CertificateDatePicker.SelectedDate == null)
             {
-                MessageBox.Show("Please select the certificate date.");
+                System.Windows.MessageBox.Show("Please select the certificate date.");
                 return;
             }
 
@@ -88,14 +164,34 @@ namespace CertificateGenerator
                         folder,
                         $"{certificate.CertificateId}.pdf");
 
+                    if (SelectedTemplate == null)
+                    {
+                        System.Windows.MessageBox.Show(
+                            "No template is selected. Please select a template first.");
+                        return;
+                    }
+
+                    System.Windows.MessageBox.Show(
+                        $"Template: {SelectedTemplate.Name}\n" +
+                        $"File: {SelectedTemplate.FilePath}\n" +
+                        $"Custom elements: " +
+                        $"{SelectedTemplate.Settings.CustomTextElements?.Count ?? 0}");
+
                     CertificatePdfGenerator.Generate(
                         certificate.RecipientName,
                         certificate.CourseName,
                         certificate.IssueDate,
                         certificate.CertificateId,
-                        pdfPath);
+                        pdfPath,
+                        SelectedTemplate?.Settings);
 
-                    MessageBox.Show(
+                    var settings = SelectedTemplate?.Settings;
+
+                    System.Windows.MessageBox.Show(
+                        $"Template: {SelectedTemplate?.Name}\n" +
+                        $"Custom elements: {settings?.CustomTextElements?.Count ?? 0}");
+
+                    System.Windows.MessageBox.Show(
                         $"Certificate saved to the database.\n\n" +
                         $"PDF created at:\n{pdfPath}",
                         "Certificate Generated",
@@ -104,7 +200,7 @@ namespace CertificateGenerator
                 }
                 catch (Exception pdfEx)
                 {
-                    MessageBox.Show(
+                    System.Windows.MessageBox.Show(
                         "Certificate details were saved, but automatic " +
                         "PDF generation failed.\n\n" + pdfEx.Message +
                         "\n\nYou can try Export Certificate PDF.",
@@ -115,7 +211,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not save certificate details.\n\n" +
                     ex.Message,
                     "Database Error",
@@ -130,7 +226,7 @@ namespace CertificateGenerator
         {
             if (_lastSavedCertificate == null)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please generate and save a certificate first.",
                     "No Certificate",
                     MessageBoxButton.OK,
@@ -138,7 +234,7 @@ namespace CertificateGenerator
                 return;
             }
 
-            var dialog = new SaveFileDialog
+            var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title = "Export Certificate PDF",
                 Filter = "PDF files (*.pdf)|*.pdf",
@@ -153,15 +249,26 @@ namespace CertificateGenerator
             try
             {
                 var certificate = _lastSavedCertificate;
+                var selectedTemplate = TemplatesComboBox.SelectedItem as SavedTemplate;
+               System.Windows.MessageBox.Show(
+    $"Selected item: {TemplatesComboBox.SelectedItem}\n" +
+    $"Selected index: {TemplatesComboBox.SelectedIndex}\n" +
+    $"Template loaded: {selectedTemplate?.Name ?? "NULL"}");
+                if (selectedTemplate == null)
+                {
+                    System.Windows.MessageBox.Show("Please select a certificate template.");
+                    return;
+                }
 
                 CertificatePdfGenerator.Generate(
                     certificate.RecipientName,
                     certificate.CourseName,
                     certificate.IssueDate,
                     certificate.CertificateId,
-                    dialog.FileName);
+                    dialog.FileName,
+                   SelectedTemplate?.Settings);
 
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Certificate PDF exported successfully!",
                     "PDF Export",
                     MessageBoxButton.OK,
@@ -169,7 +276,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "PDF export failed.\n\n" + ex.Message,
                     "PDF Error",
                     MessageBoxButton.OK,
@@ -191,7 +298,7 @@ namespace CertificateGenerator
 
                 if (!Directory.Exists(folder))
                 {
-                    MessageBox.Show("No certificate folder found.");
+                    System.Windows.MessageBox.Show("No certificate folder found.");
                     return;
                 }
 
@@ -199,7 +306,7 @@ namespace CertificateGenerator
 
                 if (pdfFiles.Length == 0)
                 {
-                    MessageBox.Show("No generated PDF certificates found.");
+                    System.Windows.MessageBox.Show("No generated PDF certificates found.");
                     return;
                 }
 
@@ -220,7 +327,7 @@ namespace CertificateGenerator
 
                 if (!File.Exists(pdfPath))
                 {
-                    MessageBox.Show(
+                    System.Windows.MessageBox.Show(
                         "The certificate PDF was not found. " +
                         "Please check the CertificateGenerator folder.");
                     return;
@@ -235,7 +342,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not preview the certificate.\n\n" + ex.Message);
             }
         }

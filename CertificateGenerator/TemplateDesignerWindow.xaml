@@ -19,8 +19,63 @@
         <ScrollViewer Grid.Column="0"
                       VerticalScrollBarVisibility="Auto"
                       Margin="0,0,18,0">
-
             <StackPanel>
+
+                <!-- CUSTOM TEXT ELEMENTS -->
+                <Border Background="#F8FAFC"
+        BorderBrush="#CBD5E1"
+        BorderThickness="1"
+        CornerRadius="8"
+        Padding="12"
+        Margin="0,12,0,0">
+
+                    <StackPanel>
+                        <TextBlock Text="Custom Text Elements"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,8"/>
+
+                        <TextBlock Text="Add extra text to your certificate."
+                   Foreground="#64748B"
+                   Margin="0,0,0,8"/>
+
+                        <TextBox x:Name="CustomTextBox"
+                 Text="Additional Text"
+                 Padding="8"
+                 Margin="0,0,0,8"/>
+
+                        <Button Content="+ Add Text Element"
+                Click="AddTextElement_Click"
+                Padding="10,7"
+                Margin="0,0,0,8"/>
+
+                        <TextBlock Text="Select an element to delete:"
+                   Margin="0,4,0,6"/>
+
+                        <ListBox x:Name="CustomTextElementsListBox"
+                 Height="100"
+                 DisplayMemberPath="Text"
+                 SelectionChanged="CustomTextElementsListBox_SelectionChanged"/>
+
+                        <Button Content="Delete Selected Text"
+                Click="DeleteTextElement_Click"
+                Padding="10,7"
+                Margin="0,8,0,0"/>
+                        <Button Content="Delete Selected Element"
+        Click="DeleteSelectedElement_Click"
+        Padding="10,7"
+        Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Template Name"
+           FontWeight="SemiBold"
+           Margin="0,0,0,6"/>
+
+                <TextBox x:Name="TemplateNameTextBox"
+         Height="35"
+         Margin="0,0,0,15"
+         Text="My Certificate Template"/>
                 <TextBlock Text="Template Designer"
                            FontSize="25"
                            FontWeight="Bold"
@@ -33,9 +88,7 @@
                 <Border Background="White"
                         CornerRadius="10"
                         Padding="16">
-
                     <StackPanel>
-
                         <TextBlock Text="Choose Design"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
@@ -44,7 +97,6 @@
                                   SelectedIndex="0"
                                   SelectionChanged="TemplateComboBox_SelectionChanged"
                                   Margin="0,0,0,16">
-
                             <ComboBoxItem Content="Classic Gold"/>
                             <ComboBoxItem Content="Modern Blue"/>
                             <ComboBoxItem Content="Elegant Green"/>
@@ -53,7 +105,6 @@
                         <TextBlock Text="Certificate Title"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <TextBox x:Name="TitleTextBox"
                                  Text="CERTIFICATE OF ACHIEVEMENT"
                                  Padding="8"
@@ -63,7 +114,6 @@
                         <TextBlock Text="Subtitle"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <TextBox x:Name="SubtitleTextBox"
                                  Text="This certificate is proudly presented to"
                                  Padding="8"
@@ -73,7 +123,6 @@
                         <TextBlock Text="Organization Name"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <TextBox x:Name="OrganizationTextBox"
                                  Text="Your Organization"
                                  Padding="8"
@@ -83,7 +132,6 @@
                         <TextBlock Text="Footer Text"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <TextBox x:Name="FooterTextBox"
                                  Text="Congratulations on your achievement!"
                                  Padding="8"
@@ -93,22 +141,51 @@
                         <TextBlock Text="Accent Color"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <ComboBox x:Name="AccentColorComboBox"
                                   SelectedIndex="0"
                                   SelectionChanged="Settings_TextChanged"
                                   Margin="0,0,0,16">
-
                             <ComboBoxItem Content="Gold"/>
                             <ComboBoxItem Content="Blue"/>
                             <ComboBoxItem Content="Green"/>
                             <ComboBoxItem Content="Purple"/>
                         </ComboBox>
 
+                        <!-- INDIVIDUAL ELEMENT COLOR -->
+                        <TextBlock Text="Customize Element Color"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ElementColorComboBox"
+                                  SelectedIndex="0"
+                                  SelectionChanged="ElementColorComboBox_SelectionChanged"
+                                  Margin="0,0,0,10">
+                            <ComboBoxItem Content="Certificate Border"/>
+                            <ComboBoxItem Content="Organization Name"/>
+                            <ComboBoxItem Content="Certificate Title"/>
+                            <ComboBoxItem Content="Subtitle"/>
+                            <ComboBoxItem Content="Recipient Name"/>
+                            <ComboBoxItem Content="Course Name"/>
+                            <ComboBoxItem Content="Issue Date"/>
+                            <ComboBoxItem Content="Footer Text"/>
+                            <ComboBoxItem Content="Certificate ID"/>
+                        </ComboBox>
+
+                        <Button Content="Choose Color..."
+                                Padding="10"
+                                Margin="0,0,0,8"
+                                Click="ChooseElementColor_Click"/>
+
+                        <Border x:Name="SelectedColorPreview"
+                                Height="30"
+                                Background="#D4AF37"
+                                BorderBrush="#CBD5E1"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Margin="0,0,0,16"/>
+
                         <TextBlock Text="Organization Logo"
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,6"/>
-
                         <Button Content="Choose Logo Image"
                                 Padding="10"
                                 Click="ChooseLogo_Click"/>
@@ -130,7 +207,6 @@
                                    Foreground="#15803D"
                                    TextWrapping="Wrap"
                                    Margin="0,10,0,0"/>
-
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -138,35 +214,29 @@
 
         <!-- RIGHT: DRAG-AND-DROP DESIGN CANVAS -->
         <Grid Grid.Column="1">
-
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0"
-                        Margin="0,0,0,12">
-
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
                 <TextBlock Text="Certificate Design Canvas"
                            FontSize="22"
                            FontWeight="Bold"
                            Foreground="#172554"/>
-
                 <TextBlock Text="Click and drag any element to reposition it."
                            Foreground="#64748B"
                            Margin="0,5,0,0"/>
             </StackPanel>
 
             <Border x:Name="PreviewBorder"
-        Grid.Row="1"
-        Background="#E2E8F0"
-        Padding="10"
-        CornerRadius="8">
-
+                    Grid.Row="1"
+                    Background="#E2E8F0"
+                    Padding="10"
+                    CornerRadius="8">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
-
                     <Canvas x:Name="DesignCanvas"
                             Width="800"
                             Height="565"
@@ -174,7 +244,8 @@
                             ClipToBounds="True">
 
                         <!-- CERTIFICATE BORDER -->
-                        <Border Canvas.Left="15"
+                        <Border x:Name="CertificateBorder"
+                                Canvas.Left="15"
                                 Canvas.Top="15"
                                 Width="770"
                                 Height="535"
@@ -319,18 +390,16 @@
                                    MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
                                    MouseMove="DesignElement_MouseMove"
                                    MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
-
                     </Canvas>
                 </ScrollViewer>
             </Border>
 
             <TextBlock Grid.Row="2"
-                       Text="Drag elements to arrange the layout. Position saving and PDF integration come next."
+                       Text="Drag elements to arrange the layout. Save the template to keep your changes."
                        Foreground="#64748B"
                        FontSize="11"
                        TextWrapping="Wrap"
                        Margin="0,10,0,0"/>
-
         </Grid>
     </Grid>
 </Window>

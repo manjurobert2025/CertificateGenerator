@@ -27,7 +27,7 @@ namespace CertificateGenerator
 
             TemplateCountTextBlock.Text =
                 $"{templates.Count} saved template(s)";
-
+            
             EmptyMessageTextBlock.Visibility =
                 templates.Count == 0
                     ? Visibility.Visible
@@ -63,7 +63,7 @@ namespace CertificateGenerator
 
             if (template == null)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please select a template to preview.",
                     "My Templates",
                     MessageBoxButton.OK,
@@ -88,7 +88,7 @@ namespace CertificateGenerator
 
             if (template == null)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please select a template to edit.");
                 return;
             }
@@ -111,12 +111,12 @@ namespace CertificateGenerator
 
             if (template == null)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please select a template to delete.");
                 return;
             }
 
-            var answer = MessageBox.Show(
+            var answer = System.Windows.MessageBox.Show(
                 $"Are you sure you want to delete " +
                 $"'{template.Settings.TemplateName}'?",
                 "Confirm Delete",
@@ -133,7 +133,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Could not delete the template:\n{ex.Message}",
                     "Delete Error",
                     MessageBoxButton.OK,
@@ -162,7 +162,7 @@ namespace CertificateGenerator
             MinHeight = 500;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = new SolidColorBrush(
-                Color.FromRgb(244, 246, 250));
+                System.Windows.Media.Color.FromRgb(244, 246, 250));
 
             var root = new Grid
             {
@@ -181,7 +181,7 @@ namespace CertificateGenerator
                 FontSize = 22,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(
-                    Color.FromRgb(23, 37, 84)),
+                    System.Windows.Media.Color.FromRgb(23, 37, 84)),
                 Margin = new Thickness(0, 0, 0, 15)
             };
 
@@ -192,18 +192,18 @@ namespace CertificateGenerator
             {
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Background = Brushes.LightGray
+                Background = System.Windows.Media.Brushes.LightGray,
             };
 
             var canvas = new Canvas
             {
                 Width = 800,
                 Height = 565,
-                Background = Brushes.White,
+                Background = System.Windows.Media.Brushes.White,
                 ClipToBounds = true
             };
 
-            Color accent = settings.TemplateName switch
+            System.Windows.Media.Color accent = settings.TemplateName switch
             {
                 "Modern Blue" => Colors.RoyalBlue,
                 "Elegant Green" => Colors.ForestGreen,
@@ -212,7 +212,7 @@ namespace CertificateGenerator
                     "Blue" => Colors.RoyalBlue,
                     "Green" => Colors.ForestGreen,
                     "Purple" => Colors.MediumPurple,
-                    _ => Color.FromRgb(212, 175, 55)
+                    _ => System.Windows.Media.Color.FromRgb(212, 175, 55)
                 }
             };
 
@@ -226,41 +226,80 @@ namespace CertificateGenerator
             });
 
             Canvas.SetLeft(canvas.Children[0], 15);
-            Canvas.SetTop(canvas.Children[0], 15);
-
-            AddText(canvas, settings.OrganizationName,
-                settings.OrganizationX, settings.OrganizationY,
-                400, 18, accent, FontWeights.SemiBold);
+            Canvas.SetTop(canvas.Children[0], 15);            
 
             AddText(canvas, settings.CertificateTitle,
-                settings.TitleX, settings.TitleY,
-                600, 26, accent, FontWeights.Bold);
+      settings.TitleX, settings.TitleY,
+      600, 26,
+      System.Drawing.Color.FromArgb(
+          accent.A, accent.R, accent.G, accent.B),
+      FontWeights.Bold);
 
             AddText(canvas, settings.Subtitle,
                 settings.SubtitleX, settings.SubtitleY,
-                500, 15, Colors.Black, FontWeights.Normal);
+                500, 15, System.Drawing.Color.Black, FontWeights.Normal);
 
             AddText(canvas, "Recipient Name",
                 settings.RecipientX, settings.RecipientY,
-                500, 30, Color.FromRgb(184, 134, 11),
+                500, 30, System.Drawing.Color.FromArgb(184, 134, 11),
                 FontWeights.Bold);
 
             AddText(canvas, "Course or Achievement",
                 settings.CourseX, settings.CourseY,
-                550, 18, Colors.Black, FontWeights.Normal);
+                550, 18, System.Drawing.Color.Black, FontWeights.Normal);
 
             AddText(canvas, "Issue Date",
                 settings.DateX, settings.DateY,
-                300, 13, Colors.Black, FontWeights.Normal);
+                300, 13, System.Drawing.Color.Black, FontWeights.Normal);
 
             AddText(canvas, settings.FooterText,
                 settings.FooterX, settings.FooterY,
-                500, 13, Colors.Black, FontWeights.Normal);
+                500, 13, System.Drawing.Color.Black, FontWeights.Normal);
 
             AddText(canvas, "Certificate ID",
                 settings.CertificateIdX,
                 settings.CertificateIdY,
-                300, 11, Colors.Gray, FontWeights.Normal);
+                300, 11, System.Drawing.Color.Gray, FontWeights.Normal);
+            // Display custom text elements saved with this template.
+            if (settings.CustomTextElements != null)
+            {
+                foreach (var item in settings.CustomTextElements)
+                {
+                    if (item == null || string.IsNullOrWhiteSpace(item.Text))
+                        continue;
+
+                    System.Windows.Media.Brush textBrush =
+                        System.Windows.Media.Brushes.Black;
+
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(item.Color))
+                        {
+                            textBrush = (System.Windows.Media.Brush)
+                                new System.Windows.Media.BrushConverter()
+                                    .ConvertFromString(item.Color);
+                        }
+                    }
+                    catch
+                    {
+                        // Keep black if the saved color is invalid.
+                    }
+
+                    var customTextBlock = new TextBlock
+                    {
+                        Text = item.Text,
+                        FontSize = item.FontSize,
+                        Foreground = textBrush,
+                        Width = 400,
+                        TextWrapping = TextWrapping.Wrap
+                    };
+
+                    Canvas.SetLeft(customTextBlock, item.X);
+                    Canvas.SetTop(customTextBlock, item.Y);
+
+                    canvas.Children.Add(customTextBlock);
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(settings.LogoPath) &&
                 File.Exists(settings.LogoPath))
@@ -274,7 +313,7 @@ namespace CertificateGenerator
                     logo.EndInit();
                     logo.Freeze();
 
-                    var image = new Image
+                    var image = new System.Windows.Controls.Image
                     {
                         Source = logo,
                         Width = 120,
@@ -306,7 +345,7 @@ namespace CertificateGenerator
             double y,
             double width,
             double fontSize,
-            Color color,
+            System.Drawing.Color color,
             FontWeight weight)
         {
             var block = new TextBlock
@@ -315,7 +354,9 @@ namespace CertificateGenerator
                 Width = width,
                 FontSize = fontSize,
                 FontWeight = weight,
-                Foreground = new SolidColorBrush(color),
+                Foreground = new System.Windows.Media.SolidColorBrush(
+    System.Windows.Media.Color.FromArgb(
+        color.A, color.R, color.G, color.B)),
                 TextAlignment = TextAlignment.Center,
                 TextWrapping = TextWrapping.Wrap
             };

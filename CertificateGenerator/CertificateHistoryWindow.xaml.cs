@@ -30,7 +30,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not load certificate history.\n\n" +
                     ex.Message,
                     "History Error",
@@ -71,7 +71,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not search certificates.\n\n" + ex.Message,
                     "Search Error",
                     MessageBoxButton.OK,
@@ -84,7 +84,7 @@ namespace CertificateGenerator
         {
             if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please select a certificate from the history list.",
                     "No Certificate Selected",
                     MessageBoxButton.OK,
@@ -105,7 +105,7 @@ namespace CertificateGenerator
 
                 if (!File.Exists(pdfPath))
                 {
-                    MessageBox.Show(
+                    System.Windows.MessageBox.Show(
                         $"The PDF for certificate {certificate.CertificateId} was not found.\n\n" +
                         $"Expected location:\n{pdfPath}",
                         "PDF Not Found",
@@ -122,7 +122,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not open the certificate PDF.\n\n" + ex.Message,
                     "Preview Error",
                     MessageBoxButton.OK,
@@ -136,7 +136,7 @@ namespace CertificateGenerator
         {
             if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please select a certificate from the history list.",
                     "No Certificate Selected",
                     MessageBoxButton.OK,
@@ -157,7 +157,7 @@ namespace CertificateGenerator
 
                 if (!File.Exists(pdfPath))
                 {
-                    MessageBox.Show(
+                    System.Windows.MessageBox.Show(
                         $"Certificate PDF not found:\n{pdfPath}",
                         "PDF Not Found",
                         MessageBoxButton.OK,
@@ -175,7 +175,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Could not open the certificate PDF.\n\n" + ex.Message,
                     "Print Error",
                     MessageBoxButton.OK,

@@ -20,6 +20,7 @@ namespace CertificateGenerator
         }
 
 
+
         private void LoadDashboardData()
         {
             try
@@ -39,19 +40,25 @@ namespace CertificateGenerator
                     .Take(5)
                     .ToList();
 
-                // Display certificates in the dashboard table
                 RecentCertificatesDataGrid.ItemsSource =
                     recentCertificates;
+
+                // Load saved template count
+                var templates = TemplateStorage.GetTemplates();
+
+                AvailableTemplatesTextBlock.Text =
+                    templates.Count.ToString();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Could not load dashboard data:\n{ex.Message}",
                     "Dashboard Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
         }
+
 
         private void BulkGeneration_Click(
     object sender, RoutedEventArgs e)
@@ -76,7 +83,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Database initialization failed:\n{ex.Message}",
                     "Database Error",
                     MessageBoxButton.OK,
@@ -89,7 +96,7 @@ namespace CertificateGenerator
         {
             if (_lastSavedCertificate == null)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "Please generate and save a certificate first.");
                 return;
             }
@@ -115,11 +122,11 @@ namespace CertificateGenerator
                     certificate.CertificateId,
                     dialog.FileName);
 
-                MessageBox.Show("Certificate PDF exported successfully!");
+                System.Windows.MessageBox.Show("Certificate PDF exported successfully!");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"PDF export failed:\n{ex.Message}");
+                System.Windows.MessageBox.Show($"PDF export failed:\n{ex.Message}");
             }
         }
         private void GenerateCertificate_Click(
@@ -171,7 +178,7 @@ namespace CertificateGenerator
                     csvDialog.FileName,
                     saveDialog.FileName);
 
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"{count} certificates generated successfully!\n\n" +
                     $"Saved to:\n{saveDialog.FileName}",
                     "Bulk Export Complete",
@@ -180,7 +187,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     ex.Message,
                     "Bulk Export Error",
                     MessageBoxButton.OK,
@@ -203,7 +210,7 @@ namespace CertificateGenerator
         private void TemplateDesigner_Click(
     object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Button clicked.");
+            System.Windows.MessageBox.Show("Button clicked.");
 
             try
             {
@@ -212,13 +219,13 @@ namespace CertificateGenerator
                     Owner = this
                 };
 
-                MessageBox.Show("Window created successfully.");
+                System.Windows.MessageBox.Show("Window created successfully.");
 
                 window.ShowDialog();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     ex.ToString(),
                     "Template Designer Error",
                     MessageBoxButton.OK,

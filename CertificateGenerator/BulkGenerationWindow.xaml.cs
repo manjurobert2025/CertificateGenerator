@@ -38,7 +38,7 @@ namespace CertificateGenerator
         private void ImportCsv_Click(
             object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Import Certificate Recipients",
                 Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
@@ -54,7 +54,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Could not import CSV:\n{ex.Message}",
                     "Import Error",
                     MessageBoxButton.OK,
@@ -69,7 +69,7 @@ namespace CertificateGenerator
 
             if (lines.Length < 2)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "The CSV must contain a header row and at least one record.");
                 return;
             }
@@ -92,7 +92,7 @@ namespace CertificateGenerator
 
             if (recipientIndex < 0 || courseIndex < 0)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "CSV must contain RecipientName and CourseName columns.",
                     "Invalid CSV",
                     MessageBoxButton.OK,
@@ -290,7 +290,7 @@ namespace CertificateGenerator
 
             if (validRows.Count == 0)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     "There are no valid records to generate.",
                     "Bulk Generation",
                     MessageBoxButton.OK,
@@ -298,7 +298,7 @@ namespace CertificateGenerator
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                 $"Generate {validRows.Count} certificates and save them to the database?",
                 "Confirm Bulk Generation",
                 MessageBoxButton.YesNo,
@@ -386,7 +386,7 @@ namespace CertificateGenerator
 
                 ValidateRows();
 
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Successfully saved {generated} certificates.",
                     "Bulk Generation Complete",
                     MessageBoxButton.OK,
@@ -394,7 +394,7 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                System.Windows.MessageBox.Show(
                     $"Could not save bulk certificates:\n{ex.Message}",
                     "Database Error",
                     MessageBoxButton.OK,

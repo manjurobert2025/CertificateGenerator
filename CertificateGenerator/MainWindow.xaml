@@ -46,14 +46,18 @@
                 <Button Content="Bulk Generation"
                         Margin="0,5"
                         Padding="12"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Stretch"
                         Click="BulkGeneration_Click"/>
-                <Button Content="Bulk PDF Export"
-        Width="150"
+                <!--<Button Content="Bulk PDF Export"       
         Height="40"
         Margin="5"
         HorizontalContentAlignment="Left"
-        Click="BulkPdfExport_Click"/>
+        Click="BulkPdfExport_Click"/>-->
+                <Button Content="Bulk PDF Export"
+         Margin="0,5"
+         Padding="12"
+         HorizontalContentAlignment="Left"
+         Click="BulkPdfExport_Click"/>
 
                 <Button Content="Certificate History"
                         Margin="0,5"

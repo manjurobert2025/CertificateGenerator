@@ -41,10 +41,14 @@ namespace CertificateGenerator
 
                     if (settings != null)
                     {
+                        System.Diagnostics.Debug.WriteLine(
+    $"Template: {settings.TemplateName}, " +
+    $"Custom elements: {settings.CustomTextElements?.Count ?? 0}");
                         templates.Add(new SavedTemplate
                         {
                             FilePath = file,
-                            Settings = settings
+                            Settings = settings,
+                            Name = settings.TemplateName,
                         });
                     }
                 }
@@ -76,6 +80,7 @@ namespace CertificateGenerator
 
     public class SavedTemplate
     {
+        public string Name { get; set; } = "My Template";
         public string FilePath { get; set; } = "";
 
         public CertificateTemplateSettings Settings { get; set; } =
