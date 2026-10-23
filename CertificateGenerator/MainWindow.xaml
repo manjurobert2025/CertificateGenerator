@@ -79,7 +79,8 @@
                 <Button Content="Organization Settings"
                         Margin="0,5"
                         Padding="12"
-                        HorizontalContentAlignment="Left"/>
+                        HorizontalContentAlignment="Left"
+                        Click="OrganizationSettingsButton_Click"/>
 
             </StackPanel>
         </Border>

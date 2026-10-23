@@ -1,8 +1,9 @@
 ﻿
+using Microsoft.Win32;
+using QuestPDF;
 using System;
 using System.IO;
 using System.Windows;
-using Microsoft.Win32;
 
 namespace CertificateGenerator
 {
@@ -26,18 +27,12 @@ namespace CertificateGenerator
         //}
 
 
+
         private void LoadTemplates()
         {
             try
             {
                 var templates = TemplateStorage.GetTemplates();
-
-                System.Windows.MessageBox.Show(
-                    string.Join("\n\n", templates.Select(t =>
-                        $"Name: {t.Name ?? "NULL"}\n" +
-                        $"File: {t.FilePath}\n" +
-                        $"Settings name: {t.Settings?.TemplateName ?? "NULL"}\n" +
-                        $"Custom elements: {t.Settings?.CustomTextElements?.Count ?? 0}")));
 
                 TemplatesComboBox.ItemsSource = null;
                 TemplatesComboBox.DisplayMemberPath = "Name";
@@ -45,10 +40,7 @@ namespace CertificateGenerator
 
                 if (templates.Count > 0)
                 {
-                    TemplatesComboBox.ItemsSource = templates;
-                    TemplatesComboBox.DisplayMemberPath = "Name";
-
-                    // Select Test Template for this test if it exists;
+                    // Select Test Template if it exists;
                     // otherwise select the first available template.
                     var testIndex = templates.FindIndex(t =>
                         string.Equals(
@@ -71,6 +63,7 @@ namespace CertificateGenerator
                     $"Error loading templates: {ex.Message}";
             }
         }
+
 
 
 
@@ -177,13 +170,16 @@ namespace CertificateGenerator
                         $"Custom elements: " +
                         $"{SelectedTemplate.Settings.CustomTextElements?.Count ?? 0}");
 
+                    var templateSettings = ApplyOrganizationSettings(
+    SelectedTemplate.Settings);
+
                     CertificatePdfGenerator.Generate(
                         certificate.RecipientName,
                         certificate.CourseName,
                         certificate.IssueDate,
                         certificate.CertificateId,
                         pdfPath,
-                        SelectedTemplate?.Settings);
+                        templateSettings);
 
                     var settings = SelectedTemplate?.Settings;
 
@@ -260,13 +256,16 @@ namespace CertificateGenerator
                     return;
                 }
 
+                var templateSettings = ApplyOrganizationSettings(
+     selectedTemplate.Settings);
+
                 CertificatePdfGenerator.Generate(
                     certificate.RecipientName,
                     certificate.CourseName,
                     certificate.IssueDate,
                     certificate.CertificateId,
                     dialog.FileName,
-                   SelectedTemplate?.Settings);
+                    templateSettings);
 
                 System.Windows.MessageBox.Show(
                     "Certificate PDF exported successfully!",
@@ -282,6 +281,28 @@ namespace CertificateGenerator
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+
+        private CertificateTemplateSettings ApplyOrganizationSettings(
+            CertificateTemplateSettings templateSettings)
+        {
+            var organization =
+                OrganizationSettingsStorage.Load();
+
+            templateSettings.OrganizationName =
+                organization.OrganizationName;
+
+            templateSettings.SignaturePath =
+                organization.SignaturePath;
+
+            templateSettings.SignatoryName =
+                organization.SignatoryName;
+
+            templateSettings.SignatoryDesignation =
+                organization.SignatoryDesignation;
+
+            return templateSettings;
         }
 
 

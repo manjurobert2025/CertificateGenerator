@@ -115,12 +115,30 @@ namespace CertificateGenerator
             {
                 var certificate = _lastSavedCertificate;
 
+                var organizationSettings = OrganizationSettingsStorage.Load();
+
+                var templateSettings = new CertificateTemplateSettings(); 
+
+                templateSettings.OrganizationName =
+                    organizationSettings.OrganizationName;
+
+                // Use the authorised signatory details from Organization Settings.
+                templateSettings.SignaturePath =
+                    organizationSettings.SignaturePath;
+
+                templateSettings.SignatoryName =
+                    organizationSettings.SignatoryName;
+
+                templateSettings.SignatoryDesignation =
+                    organizationSettings.SignatoryDesignation;
+
                 CertificatePdfGenerator.Generate(
                     certificate.RecipientName,
                     certificate.CourseName,
                     certificate.IssueDate,
                     certificate.CertificateId,
-                    dialog.FileName);
+                    dialog.FileName,
+                    templateSettings);
 
                 System.Windows.MessageBox.Show("Certificate PDF exported successfully!");
             }
@@ -193,6 +211,16 @@ namespace CertificateGenerator
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void OrganizationSettingsButton_Click(
+    object sender, RoutedEventArgs e)
+        {
+            OrganizationSettingsWindow window =
+                new OrganizationSettingsWindow();
+
+            window.Owner = this;
+            window.ShowDialog();
         }
 
         private void MyTemplates_Click(

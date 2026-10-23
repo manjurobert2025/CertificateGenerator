@@ -55,6 +55,20 @@ namespace CertificateGenerator
                 settings.BorderColor, "#D4AF37");
 
             byte[]? logoBytes = null;
+            byte[]? signatureBytes = null;
+
+            if (!string.IsNullOrWhiteSpace(settings.LogoPath)
+                && File.Exists(settings.LogoPath))
+            {
+                logoBytes = File.ReadAllBytes(settings.LogoPath);
+            }
+
+            if (settings.ShowSignature
+                && !string.IsNullOrWhiteSpace(settings.SignaturePath)
+                && File.Exists(settings.SignaturePath))
+            {
+                signatureBytes = File.ReadAllBytes(settings.SignaturePath);
+            }
 
             if (!string.IsNullOrWhiteSpace(settings.LogoPath)
                 && File.Exists(settings.LogoPath))
@@ -70,13 +84,19 @@ namespace CertificateGenerator
                     page.Margin(0);
                     page.PageColor(Colors.White);
 
+
                     page.Content().Layers(layers =>
                     {
-                        layers.PrimaryLayer()
-                            .Border(5)
-                            .BorderColor(borderColor);
+                        // Show the border only when enabled.
+                        if (settings.ShowBorder)
+                        {
+                            layers.PrimaryLayer()
+                                .Border(5)
+                                .BorderColor(borderColor);
+                        }
 
-                        if (logoBytes != null)
+                        // Logo
+                        if (settings.ShowLogo && logoBytes != null)
                         {
                             AddPositioned(
                                 layers,
@@ -86,71 +106,108 @@ namespace CertificateGenerator
                                 55,
                                 scaleX,
                                 scaleY,
+                                element => element.Image(logoBytes).FitArea());
+                        }
+
+                        // Signature
+                        if (settings.ShowSignature && signatureBytes != null)
+                        {
+                            AddPositioned(
+                                layers,
+                                settings.SignatureX,
+                                settings.SignatureY,
+                                (float)settings.SignatureWidth,
+                                (float)settings.SignatureHeight,
+                                scaleX,
+                                scaleY,
                                 element => element
-                                    .Image(logoBytes)
+                                    .Image(signatureBytes)
                                     .FitArea());
                         }
 
-                        // Match the widths and alignment in the XAML.
-                        AddText(layers, organization,
-                            settings.OrganizationX,
-                            settings.OrganizationY,
-                            400, 18,
-                            GetColor(settings.OrganizationColor, "#475569"),
-                            scaleX, scaleY, bold: true);
+                        // Organization
+                        if (settings.ShowOrganization)
+                        {
+                            AddText(layers, organization,
+                                settings.OrganizationX, settings.OrganizationY,
+                                400, 18,
+                                GetColor(settings.OrganizationColor, "#475569"),
+                                scaleX, scaleY, bold: true);
+                        }
 
-                        AddText(layers, title,
-                            settings.TitleX,
-                            settings.TitleY,
-                            600, 26,
-                            GetColor(settings.TitleColor, "#1D4ED8"),
-                            scaleX, scaleY, bold: true);
+                        // Certificate title
+                        if (settings.ShowTitle)
+                        {
+                            AddText(layers, title,
+                                settings.TitleX, settings.TitleY,
+                                600, 26,
+                                GetColor(settings.TitleColor, "#1D4ED8"),
+                                scaleX, scaleY, bold: true);
+                        }
 
-                        AddText(layers, subtitle,
-                            settings.SubtitleX,
-                            settings.SubtitleY,
-                            500, 15,
-                            GetColor(settings.SubtitleColor, "#000000"),
-                            scaleX, scaleY);
+                        // Subtitle
+                        if (settings.ShowSubtitle)
+                        {
+                            AddText(layers, subtitle,
+                                settings.SubtitleX, settings.SubtitleY,
+                                500, 15,
+                                GetColor(settings.SubtitleColor, "#000000"),
+                                scaleX, scaleY);
+                        }
 
-                        AddText(layers, recipientName,
-                            settings.RecipientX,
-                            settings.RecipientY,
-                            500, 30,
-                            GetColor(settings.RecipientColor, "#B8860B"),
-                            scaleX, scaleY, bold: true);
+                        // Recipient name
+                        if (settings.ShowRecipient)
+                        {
+                            AddText(layers, recipientName,
+                                settings.RecipientX, settings.RecipientY,
+                                500, 30,
+                                GetColor(settings.RecipientColor, "#B8860B"),
+                                scaleX, scaleY, bold: true);
+                        }
 
-                        AddText(layers, courseName,
-                            settings.CourseX,
-                            settings.CourseY,
-                            550, 18,
-                            GetColor(settings.CourseColor, "#000000"),
-                            scaleX, scaleY, bold: true);
+                        // Course name
+                        if (settings.ShowCourse)
+                        {
+                            AddText(layers, courseName,
+                                settings.CourseX, settings.CourseY,
+                                550, 18,
+                                GetColor(settings.CourseColor, "#000000"),
+                                scaleX, scaleY, bold: true);
+                        }
 
-                        AddText(layers,
-                            $"Date: {certificateDate:dd MMMM yyyy}",
-                            settings.DateX,
-                            settings.DateY,
-                            300, 13,
-                            GetColor(settings.DateColor, "#000000"),
-                            scaleX, scaleY);
+                        // Date
+                        if (settings.ShowDate)
+                        {
+                            AddText(layers,
+                                $"Date: {certificateDate:dd MMMM yyyy}",
+                                settings.DateX, settings.DateY,
+                                300, 13,
+                                GetColor(settings.DateColor, "#000000"),
+                                scaleX, scaleY);
+                        }
 
-                        AddText(layers, footer,
-                            settings.FooterX,
-                            settings.FooterY,
-                            500, 13,
-                            GetColor(settings.FooterColor, "#000000"),
-                            scaleX, scaleY);
+                        // Footer
+                        if (settings.ShowFooter)
+                        {
+                            AddText(layers, footer,
+                                settings.FooterX, settings.FooterY,
+                                500, 13,
+                                GetColor(settings.FooterColor, "#000000"),
+                                scaleX, scaleY);
+                        }
 
-                        AddText(layers,
-                            $"Certificate ID: {certificateId}",
-                            settings.CertificateIdX,
-                            settings.CertificateIdY,
-                            300, 11,
-                            GetColor(settings.CertificateIdColor, "#64748B"),
-                            scaleX, scaleY);
+                        // Certificate ID
+                        if (settings.ShowCertificateId)
+                        {
+                            AddText(layers,
+                                $"Certificate ID: {certificateId}",
+                                settings.CertificateIdX, settings.CertificateIdY,
+                                300, 11,
+                                GetColor(settings.CertificateIdColor, "#64748B"),
+                                scaleX, scaleY);
+                        }
 
-                        // Custom elements are left-aligned in the designer.
+                        // Custom text elements
                         if (settings.CustomTextElements != null)
                         {
                             foreach (var item in settings.CustomTextElements)
@@ -172,8 +229,10 @@ namespace CertificateGenerator
                                     centered: false);
                             }
                         }
-                    });
-                });
+                    }); // Closes Layers
+
+                }); // Closes Page               
+
             }).GeneratePdf(outputPath);
         }
 

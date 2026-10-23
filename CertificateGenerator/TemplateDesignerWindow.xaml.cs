@@ -68,14 +68,35 @@ namespace CertificateGenerator
         public double FooterY { get; set; } = 440;
         public double CertificateIdX { get; set; } = 250;
         public double CertificateIdY { get; set; } = 485;
+        public bool ShowBorder { get; set; } = true;
+        public bool ShowLogo { get; set; } = true;
+        public bool ShowOrganization { get; set; } = true;
+        public bool ShowTitle { get; set; } = true;
+        public bool ShowSubtitle { get; set; } = true;
+        public bool ShowRecipient { get; set; } = true;
+        public bool ShowCourse { get; set; } = true;
+        public bool ShowDate { get; set; } = true;
+        public bool ShowFooter { get; set; } = true;
+        public bool ShowCertificateId { get; set; } = true;
 
         // Added for custom text support. Older templates remain compatible.
         public List<CustomTextElement> CustomTextElements { get; set; } = new();
+        public string SignaturePath { get; set; } = "";
+        public string SignatoryName { get; set; } = "";
+        public string SignatoryDesignation { get; set; } = "";
+
+        public double SignatureX { get; set; } = 250;
+        public double SignatureY { get; set; } = 400;
+        public double SignatureWidth { get; set; } = 120;
+        public double SignatureHeight { get; set; } = 60;
+
+        public bool ShowSignature { get; set; } = true;
     }
 
     public partial class TemplateDesignerWindow : Window
     {
         private string? _settingsPath;
+        private string _signaturePath = "";
         private string _legacySettingsPath = "";
         private bool _initializing;
 
@@ -93,6 +114,15 @@ namespace CertificateGenerator
         private string _dateColor = "";
         private string _footerColor = "";
         private string _certificateIdColor = "";
+        public bool ShowLogo { get; set; } = true;
+        public bool ShowOrganization { get; set; } = true;
+        public bool ShowTitle { get; set; } = true;
+        public bool ShowSubtitle { get; set; } = true;
+        public bool ShowRecipient { get; set; } = true;
+        public bool ShowCourse { get; set; } = true;
+        public bool ShowDate { get; set; } = true;
+        public bool ShowFooter { get; set; } = true;
+        public bool ShowCertificateId { get; set; } = true;
 
         private readonly List<CustomTextElement> _customTextElements = new();
 
@@ -116,6 +146,12 @@ namespace CertificateGenerator
             _settingsPath = templatePath;
 
             LoadTemplate();
+
+            // Apply organization settings only to a new template.
+            if (string.IsNullOrWhiteSpace(templatePath))
+            {
+                ApplyOrganizationDefaults();
+            }
         }
 
         // LOAD SAVED TEMPLATE
@@ -202,10 +238,79 @@ namespace CertificateGenerator
                             settings.CertificateIdX,
                             settings.CertificateIdY);
 
+                        CertificateBorder.Visibility =
+                            settings.ShowBorder ? Visibility.Visible : Visibility.Collapsed;
+
+                        LogoImage.Visibility =
+                            settings.ShowLogo ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewOrganizationTextBlock.Visibility =
+                            settings.ShowOrganization ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewTitleTextBlock.Visibility =
+                            settings.ShowTitle ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewSubtitleTextBlock.Visibility =
+                            settings.ShowSubtitle ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewRecipientTextBlock.Visibility =
+                            settings.ShowRecipient ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewCourseTextBlock.Visibility =
+                            settings.ShowCourse ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewDateTextBlock.Visibility =
+                            settings.ShowDate ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewFooterTextBlock.Visibility =
+                            settings.ShowFooter ? Visibility.Visible : Visibility.Collapsed;
+
+                        PreviewCertificateIdTextBlock.Visibility =
+                            settings.ShowCertificateId ? Visibility.Visible : Visibility.Collapsed;
+
+
                         if (!string.IsNullOrWhiteSpace(settings.LogoPath)
                             && File.Exists(settings.LogoPath))
                         {
                             LoadLogo(settings.LogoPath);
+                        }
+                        // Restore signature settings
+                        _signaturePath = settings.SignaturePath ?? "";
+
+                        SignatureImage.Width = settings.SignatureWidth > 0
+                            ? settings.SignatureWidth
+                            : 120;
+
+                        SignatureImage.Height = settings.SignatureHeight > 0
+                            ? settings.SignatureHeight
+                            : 60;
+
+                        SetPosition(
+                            SignatureImage,
+                            settings.SignatureX,
+                            settings.SignatureY);
+
+                        if (!string.IsNullOrWhiteSpace(_signaturePath)
+                            && File.Exists(_signaturePath))
+                        {
+                            var signature = new BitmapImage();
+
+                            signature.BeginInit();
+                            signature.CacheOption = BitmapCacheOption.OnLoad;
+                            signature.UriSource = new Uri(_signaturePath);
+                            signature.EndInit();
+                            signature.Freeze();
+
+                            SignatureImage.Source = signature;
+
+                            SignatureImage.Visibility = settings.ShowSignature
+                                ? Visibility.Visible
+                                : Visibility.Collapsed;
+                        }
+                        else
+                        {
+                            SignatureImage.Source = null;
+                            SignatureImage.Visibility = Visibility.Collapsed;
                         }
 
                         LoadCustomTextElements(
@@ -227,6 +332,47 @@ namespace CertificateGenerator
             UpdateSelectedColorPreview();
         }
 
+        private void UploadSignature_Click(
+    object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select Signature Image",
+                Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
+                CheckFileExists = true
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            try
+            {
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(dialog.FileName);
+                image.EndInit();
+                image.Freeze();
+
+                SignatureImage.Source = image;
+                _signaturePath = dialog.FileName;
+                SignatureImage.Visibility = Visibility.Visible;
+
+                Canvas.SetLeft(SignatureImage, 250);
+                Canvas.SetTop(SignatureImage, 400);
+
+                StatusTextBlock.Text =
+                    "Signature added. Drag it into position, then save the template.";
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Could not load signature: {ex.Message}",
+                    "Signature Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
         private static void SelectComboItem(
             WpfComboBox comboBox,
             string? value)
@@ -341,6 +487,7 @@ namespace CertificateGenerator
             ApplyCustomColor(PreviewFooterTextBlock, _footerColor);
             ApplyCustomColor(
                 PreviewCertificateIdTextBlock, _certificateIdColor);
+
         }
 
         private static void ApplyCustomColor(
@@ -723,8 +870,9 @@ namespace CertificateGenerator
             Canvas.SetTop(_draggedElement, newTop);
         }
         private UIElement? _selectedElement;
+
         private void DeleteSelectedElement_Click(
-    object sender, RoutedEventArgs e)
+            object sender, RoutedEventArgs e)
         {
             if (_selectedElement == null)
             {
@@ -734,21 +882,41 @@ namespace CertificateGenerator
             }
 
             UIElement element = _selectedElement;
-            string tag = element is FrameworkElement fe
-                ? fe.Tag?.ToString() ?? ""
-                : "";
 
+            // Hide the border but retain the control.
             if (element == CertificateBorder)
             {
-                DesignCanvas.Children.Remove(CertificateBorder);
+                CertificateBorder.Visibility = Visibility.Collapsed;
             }
             else if (element == LogoImage)
             {
-                DesignCanvas.Children.Remove(LogoImage);
+                LogoImage.Visibility = Visibility.Collapsed;
                 LogoPathTextBlock.Text = "No logo selected";
+            }
+            else if (element == PreviewOrganizationTextBlock ||
+                     element == PreviewTitleTextBlock ||
+                     element == PreviewSubtitleTextBlock ||
+                     element == PreviewRecipientTextBlock ||
+                     element == PreviewCourseTextBlock ||
+                     element == PreviewDateTextBlock ||
+                     element == PreviewFooterTextBlock ||
+                     element == PreviewCertificateIdTextBlock)
+            {
+                element.Visibility = Visibility.Collapsed;
             }
             else
             {
+                // If it is custom text, remove it from every collection.
+                var match = _customTextBlocks.FirstOrDefault(
+                    pair => pair.Value == element);
+
+                if (match.Key != null)
+                {
+                    _customTextElements.Remove(match.Key);
+                    _customTextBlocks.Remove(match.Key);
+                    CustomTextElementsListBox.Items.Remove(match.Key);
+                }
+
                 DesignCanvas.Children.Remove(element);
             }
 
@@ -761,8 +929,9 @@ namespace CertificateGenerator
             _selectedElement = null;
 
             StatusTextBlock.Text =
-                $"Deleted {tag} element. Save the template to keep the change.";
+                "Element deleted. Save the template to keep the change.";
         }
+
         // FINISH DRAGGING
         private void DesignElement_MouseLeftButtonUp(
             object sender, MouseButtonEventArgs e)
@@ -776,6 +945,26 @@ namespace CertificateGenerator
         }
 
         // SAVE SETTINGS, COLORS, POSITIONS AND CUSTOM TEXT
+
+        private void ApplyOrganizationDefaults()
+        {
+            OrganizationSettings organization =
+                OrganizationSettingsStorage.Load();
+
+            if (!string.IsNullOrWhiteSpace(organization.OrganizationName))
+            {
+                OrganizationTextBox.Text =
+                    organization.OrganizationName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(organization.LogoPath) &&
+                File.Exists(organization.LogoPath))
+            {
+                LoadLogo(organization.LogoPath);
+            }
+            UpdatePreview();
+        }
+
         private void SaveTemplate_Click(
             object sender, RoutedEventArgs e)
         {
@@ -799,7 +988,7 @@ namespace CertificateGenerator
                     DateColor = _dateColor,
                     FooterColor = _footerColor,
                     CertificateIdColor = _certificateIdColor,
-
+                    SignaturePath = _signaturePath,
                     LogoPath =
                         LogoPathTextBlock.Text == "No logo selected"
                             ? ""
@@ -835,6 +1024,41 @@ namespace CertificateGenerator
                         Canvas.GetLeft(PreviewCertificateIdTextBlock),
                     CertificateIdY =
                         Canvas.GetTop(PreviewCertificateIdTextBlock),
+                    ShowBorder =
+    CertificateBorder.Visibility == Visibility.Visible,
+
+                    ShowLogo =
+    LogoImage.Visibility == Visibility.Visible,
+
+                    ShowOrganization =
+    PreviewOrganizationTextBlock.Visibility == Visibility.Visible,
+
+                    ShowTitle =
+    PreviewTitleTextBlock.Visibility == Visibility.Visible,
+
+                    ShowSubtitle =
+    PreviewSubtitleTextBlock.Visibility == Visibility.Visible,
+
+                    ShowRecipient =
+    PreviewRecipientTextBlock.Visibility == Visibility.Visible,
+
+                    ShowCourse =
+    PreviewCourseTextBlock.Visibility == Visibility.Visible,
+
+                    ShowDate =
+    PreviewDateTextBlock.Visibility == Visibility.Visible,
+
+                    ShowFooter =
+    PreviewFooterTextBlock.Visibility == Visibility.Visible,
+
+                    ShowCertificateId =
+    PreviewCertificateIdTextBlock.Visibility == Visibility.Visible,                   
+
+                    SignatureX = Canvas.GetLeft(SignatureImage),
+                    SignatureY = Canvas.GetTop(SignatureImage),
+                    SignatureWidth = SignatureImage.Width,
+                    SignatureHeight = SignatureImage.Height,
+                    ShowSignature = SignatureImage.Visibility == Visibility.Visible,
 
                     CustomTextElements = _customTextElements
                         .Select(item =>

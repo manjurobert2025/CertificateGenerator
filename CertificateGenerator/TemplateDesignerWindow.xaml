@@ -195,6 +195,11 @@
                                    Foreground="#64748B"
                                    TextWrapping="Wrap"
                                    Margin="0,8,0,16"/>
+                        
+                        <Button Content="Upload Signature"
+        Click="UploadSignature_Click"
+        Margin="5"
+        Padding="10,5"/>
 
                         <Button Content="Save Template"
                                 Background="#15803D"
@@ -390,6 +395,17 @@
                                    MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
                                    MouseMove="DesignElement_MouseMove"
                                    MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
+                        <Image x:Name="SignatureImage"
+Width="120"
+Height="60"
+Stretch="Uniform"
+Canvas.Left="250"
+Canvas.Top="400"
+Visibility="Collapsed"
+Cursor="SizeAll"
+MouseLeftButtonDown="DesignElement_MouseLeftButtonDown"
+MouseMove="DesignElement_MouseMove"
+MouseLeftButtonUp="DesignElement_MouseLeftButtonUp"/>
                     </Canvas>
                 </ScrollViewer>
             </Border>
