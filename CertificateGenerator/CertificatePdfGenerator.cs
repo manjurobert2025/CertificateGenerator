@@ -125,6 +125,46 @@ namespace CertificateGenerator
                                     .FitArea());
                         }
 
+                        if (settings.ShowSignature)
+                        {
+                            double signatoryNameY =
+                                settings.SignatureY + settings.SignatureHeight + 4;
+
+                            double signatoryDesignationY =
+                                signatoryNameY + 14;
+
+                            // Signatory name
+                            if (!string.IsNullOrWhiteSpace(settings.SignatoryName))
+                            {
+                                AddText(
+                                    layers,
+                                    settings.SignatoryName,
+                                    settings.SignatureX,
+                                    signatoryNameY,
+                                    settings.SignatureWidth,
+                                    10,
+                                    "#000000",
+                                    scaleX,
+                                    scaleY,
+                                    bold: true);
+                            }
+
+                            // Signatory designation
+                            if (!string.IsNullOrWhiteSpace(settings.SignatoryDesignation))
+                            {
+                                AddText(
+                                    layers,
+                                    settings.SignatoryDesignation,
+                                    settings.SignatureX,
+                                    signatoryDesignationY,
+                                    settings.SignatureWidth,
+                                    9,
+                                    "#475569",
+                                    scaleX,
+                                    scaleY);
+                            }
+                        }
+
                         // Organization
                         if (settings.ShowOrganization)
                         {

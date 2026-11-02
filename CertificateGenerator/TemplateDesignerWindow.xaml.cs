@@ -85,10 +85,10 @@ namespace CertificateGenerator
         public string SignatoryName { get; set; } = "";
         public string SignatoryDesignation { get; set; } = "";
 
-        public double SignatureX { get; set; } = 250;
-        public double SignatureY { get; set; } = 400;
+        public double SignatureX { get; set; } = 600;
+        public double SignatureY { get; set; } = 460;
         public double SignatureWidth { get; set; } = 120;
-        public double SignatureHeight { get; set; } = 60;
+        public double SignatureHeight { get; set; } = 45;
 
         public bool ShowSignature { get; set; } = true;
     }

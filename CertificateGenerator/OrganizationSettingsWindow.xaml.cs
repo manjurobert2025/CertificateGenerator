@@ -149,6 +149,18 @@ namespace CertificateGenerator
                 && !File.Exists(logoPath))
             {
                 System.Windows.MessageBox.Show(
+                    "The logo file cannot be found. Please browse and select it again, or clear the logo path.",
+                    "Invalid Logo",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(logoPath)
+                && !File.Exists(logoPath))
+            {
+                System.Windows.MessageBox.Show(
                     "The selected logo file does not exist. Please select a valid logo.",
                     "Invalid Logo",
                     MessageBoxButton.OK,
