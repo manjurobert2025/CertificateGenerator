@@ -332,47 +332,7 @@ namespace CertificateGenerator
             UpdateSelectedColorPreview();
         }
 
-        private void UploadSignature_Click(
-    object sender, RoutedEventArgs e)
-        {
-            var dialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = "Select Signature Image",
-                Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp",
-                CheckFileExists = true
-            };
-
-            if (dialog.ShowDialog() != true)
-                return;
-
-            try
-            {
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(dialog.FileName);
-                image.EndInit();
-                image.Freeze();
-
-                SignatureImage.Source = image;
-                _signaturePath = dialog.FileName;
-                SignatureImage.Visibility = Visibility.Visible;
-
-                Canvas.SetLeft(SignatureImage, 250);
-                Canvas.SetTop(SignatureImage, 400);
-
-                StatusTextBlock.Text =
-                    "Signature added. Drag it into position, then save the template.";
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(
-                    $"Could not load signature: {ex.Message}",
-                    "Signature Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-            }
-        }
+       
         private static void SelectComboItem(
             WpfComboBox comboBox,
             string? value)
@@ -893,6 +853,17 @@ namespace CertificateGenerator
                 LogoImage.Visibility = Visibility.Collapsed;
                 LogoPathTextBlock.Text = "No logo selected";
             }
+
+            else if (element == SignatureImage)
+            {
+                // Keep the existing signature in the template.
+                // Signature upload and deletion are not supported here.
+                StatusTextBlock.Text =
+                    "The existing signature can be repositioned, but not deleted here.";
+
+                return;
+            }
+
             else if (element == PreviewOrganizationTextBlock ||
                      element == PreviewTitleTextBlock ||
                      element == PreviewSubtitleTextBlock ||

@@ -82,15 +82,15 @@ namespace CertificateGenerator
             string courseName = CourseNameTextBox.Text.Trim();
            
             var selectedTemplate = TemplatesComboBox.SelectedItem as SavedTemplate;
-            System.Windows.MessageBox.Show(
-     $"Selected item type: " +
-     $"{TemplatesComboBox.SelectedItem?.GetType().FullName ?? "NULL"}\n" +
-     $"Selected template name: " +
-     $"{selectedTemplate?.Name ?? "NULL"}\n" +
-     $"Settings template name: " +
-     $"{selectedTemplate?.Settings?.TemplateName ?? "NULL"}\n" +
-     $"Custom elements: " +
-     $"{selectedTemplate?.Settings?.CustomTextElements?.Count ?? 0}");
+     //       System.Windows.MessageBox.Show(
+     //$"Selected item type: " +
+     //$"{TemplatesComboBox.SelectedItem?.GetType().FullName ?? "NULL"}\n" +
+     //$"Selected template name: " +
+     //$"{selectedTemplate?.Name ?? "NULL"}\n" +
+     //$"Settings template name: " +
+     //$"{selectedTemplate?.Settings?.TemplateName ?? "NULL"}\n" +
+     //$"Custom elements: " +
+     //$"{selectedTemplate?.Settings?.CustomTextElements?.Count ?? 0}");
 
             if (string.IsNullOrWhiteSpace(recipientName))
             {
@@ -164,11 +164,11 @@ namespace CertificateGenerator
                         return;
                     }
 
-                    System.Windows.MessageBox.Show(
-                        $"Template: {SelectedTemplate.Name}\n" +
-                        $"File: {SelectedTemplate.FilePath}\n" +
-                        $"Custom elements: " +
-                        $"{SelectedTemplate.Settings.CustomTextElements?.Count ?? 0}");
+                    //System.Windows.MessageBox.Show(
+                    //    $"Template: {SelectedTemplate.Name}\n" +
+                    //    $"File: {SelectedTemplate.FilePath}\n" +
+                    //    $"Custom elements: " +
+                    //    $"{SelectedTemplate.Settings.CustomTextElements?.Count ?? 0}");
 
                     var templateSettings = ApplyOrganizationSettings(
     SelectedTemplate.Settings);
@@ -183,9 +183,9 @@ namespace CertificateGenerator
 
                     var settings = SelectedTemplate?.Settings;
 
-                    System.Windows.MessageBox.Show(
-                        $"Template: {SelectedTemplate?.Name}\n" +
-                        $"Custom elements: {settings?.CustomTextElements?.Count ?? 0}");
+                    //System.Windows.MessageBox.Show(
+                    //    $"Template: {SelectedTemplate?.Name}\n" +
+                    //    $"Custom elements: {settings?.CustomTextElements?.Count ?? 0}");
 
                     System.Windows.MessageBox.Show(
                         $"Certificate saved to the database.\n\n" +
@@ -246,10 +246,10 @@ namespace CertificateGenerator
             {
                 var certificate = _lastSavedCertificate;
                 var selectedTemplate = TemplatesComboBox.SelectedItem as SavedTemplate;
-               System.Windows.MessageBox.Show(
-    $"Selected item: {TemplatesComboBox.SelectedItem}\n" +
-    $"Selected index: {TemplatesComboBox.SelectedIndex}\n" +
-    $"Template loaded: {selectedTemplate?.Name ?? "NULL"}");
+    //           System.Windows.MessageBox.Show(
+    //$"Selected item: {TemplatesComboBox.SelectedItem}\n" +
+    //$"Selected index: {TemplatesComboBox.SelectedIndex}\n" +
+    //$"Template loaded: {selectedTemplate?.Name ?? "NULL"}");
                 if (selectedTemplate == null)
                 {
                     System.Windows.MessageBox.Show("Please select a certificate template.");

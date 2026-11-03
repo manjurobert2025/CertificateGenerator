@@ -148,13 +148,20 @@ namespace CertificateGenerator
             }
         }
         private void GenerateCertificate_Click(
-            object sender, RoutedEventArgs e)
+     object sender, RoutedEventArgs e)
         {
             GenerateCertificateWindow window =
-                new GenerateCertificateWindow();
+                new GenerateCertificateWindow
+                {
+                    Owner = this
+                };
 
             window.ShowDialog();
+
+            // Refresh dashboard after certificate generation.
+            LoadDashboardData();
         }
+
         private void CertificateHistory_Click(
     object sender, RoutedEventArgs e)
         {
@@ -238,7 +245,7 @@ namespace CertificateGenerator
         private void TemplateDesigner_Click(
     object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show("Button clicked.");
+            //System.Windows.MessageBox.Show("Button clicked.");
 
             try
             {
@@ -247,7 +254,7 @@ namespace CertificateGenerator
                     Owner = this
                 };
 
-                System.Windows.MessageBox.Show("Window created successfully.");
+                //System.Windows.MessageBox.Show("Window created successfully.");
 
                 window.ShowDialog();
             }
