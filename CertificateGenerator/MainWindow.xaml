@@ -57,7 +57,7 @@
          Margin="0,5"
          Padding="12"
          HorizontalContentAlignment="Left"
-         Click="BulkPdfExport_Click"/>
+         Click="PdfExportButton_Click"/>
 
                 <Button Content="Certificate History"
                         Margin="0,5"

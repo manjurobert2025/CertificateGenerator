@@ -130,7 +130,73 @@ namespace CertificateGenerator
             }
         }
 
+        private void DeleteSelectedButton_Click(
+    object sender, RoutedEventArgs e)
+        {
+            if (CertificateDataGrid.SelectedItem
+                is not CertificateRecord certificate)
+            {
+                System.Windows.MessageBox.Show(
+                    "Please select a certificate to delete.",
+                    "No Certificate Selected",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
 
+                return;
+            }
+
+            var result = System.Windows.MessageBox.Show(
+                $"Are you sure you want to delete this certificate?\n\n" +
+                $"Certificate ID: {certificate.CertificateId}\n" +
+                $"Recipient: {certificate.RecipientName}\n" +
+                $"Course: {certificate.CourseName}\n\n" +
+                "This will remove the certificate from history.",
+                "Confirm Deletion",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                using var db = new CertificateDbContext();
+
+                var record = db.Certificates
+                    .FirstOrDefault(c => c.Id == certificate.Id);
+
+                if (record == null)
+                {
+                    System.Windows.MessageBox.Show(
+                        "Certificate record was not found.",
+                        "Delete Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    LoadCertificates();
+                    return;
+                }
+
+                db.Certificates.Remove(record);
+                db.SaveChanges();
+
+                LoadCertificates();
+
+                System.Windows.MessageBox.Show(
+                    "Certificate history record deleted successfully.",
+                    "Deletion Completed",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    "Could not delete certificate.\n\n" + ex.Message,
+                    "Delete Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
         private void PrintSelectedButton_Click(
             object sender, RoutedEventArgs e)
         {

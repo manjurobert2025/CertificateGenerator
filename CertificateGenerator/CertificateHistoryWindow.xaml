@@ -3,13 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Certificate History"
         Height="550"
-        Width="900"
+        Width="1000"
         WindowStartupLocation="CenterOwner"
         Background="#F4F6FA">
 
     <DockPanel Margin="25">
 
+        <!-- Header and Search -->
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+
             <TextBlock Text="Certificate History"
                        FontSize="26"
                        FontWeight="Bold"
@@ -21,6 +23,7 @@
                        Margin="0,6,0,15"/>
 
             <DockPanel>
+
                 <TextBox x:Name="SearchTextBox"
                          Height="35"
                          Padding="8"
@@ -32,45 +35,56 @@
                         Width="100"
                         Margin="10,0,0,0"
                         Click="RefreshButton_Click"/>
+
             </DockPanel>
+
         </StackPanel>
 
-
+        <!-- Action Buttons -->
         <StackPanel DockPanel.Dock="Bottom"
-            Orientation="Horizontal"
-            HorizontalAlignment="Right"
-            Margin="0,15,0,0">
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,15,0,0">
 
             <Button Content="Preview Selected"
-            Width="150"
-            Height="40"
-            Margin="5"
-            Background="#2563EB"
-            Foreground="White"
-            Click="PreviewSelectedButton_Click"/>
+                    Width="145"
+                    Height="40"
+                    Margin="5"
+                    Background="#2563EB"
+                    Foreground="White"
+                    Click="PreviewSelectedButton_Click"/>
 
             <Button Content="Print Selected"
-        Width="150"
-        Height="40"
-        Margin="5"
-        Background="#15803D"
-        Foreground="White"
-        Click="PrintSelectedButton_Click"/>
+                    Width="145"
+                    Height="40"
+                    Margin="5"
+                    Background="#15803D"
+                    Foreground="White"
+                    Click="PrintSelectedButton_Click"/>
+
+            <Button Content="Delete Selected"
+                    Width="145"
+                    Height="40"
+                    Margin="5"
+                    Background="#DC2626"
+                    Foreground="White"
+                    Click="DeleteSelectedButton_Click"/>
 
         </StackPanel>
 
+        <!-- Certificate List -->
         <DataGrid x:Name="CertificateDataGrid"
-          AutoGenerateColumns="False"
-          IsReadOnly="True"
-          CanUserAddRows="False"
-          SelectionMode="Single"
-          SelectionUnit="FullRow"
-          IsSynchronizedWithCurrentItem="False"
-          HeadersVisibility="Column"
-          GridLinesVisibility="Horizontal">
-
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  IsSynchronizedWithCurrentItem="False"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal">
 
             <DataGrid.Columns>
+
                 <DataGridTextColumn Header="Certificate ID"
                                     Binding="{Binding CertificateId}"
                                     Width="180"/>
@@ -86,9 +100,11 @@
                 <DataGridTextColumn Header="Issue Date"
                                     Binding="{Binding IssueDate, StringFormat={}{0:dd-MM-yyyy}}"
                                     Width="130"/>
+
             </DataGrid.Columns>
-            
+
         </DataGrid>
 
     </DockPanel>
+
 </Window>

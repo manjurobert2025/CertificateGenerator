@@ -285,16 +285,34 @@ namespace CertificateGenerator
 
 
         private CertificateTemplateSettings ApplyOrganizationSettings(
-            CertificateTemplateSettings templateSettings)
+      CertificateTemplateSettings templateSettings)
         {
-            var organization =
-                OrganizationSettingsStorage.Load();
+            var organization = OrganizationSettingsStorage.Load();
 
-            templateSettings.OrganizationName =
-                organization.OrganizationName;
+            if (organization == null)
+                return templateSettings;
 
-            templateSettings.SignaturePath =
-                organization.SignaturePath;
+            // Organization name
+            if (!string.IsNullOrWhiteSpace(organization.OrganizationName))
+            {
+                templateSettings.OrganizationName =
+                    organization.OrganizationName;
+            }
+
+            // Use organization logo only if a valid file exists.
+            // Otherwise, preserve the logo saved in the template.
+            if (!string.IsNullOrWhiteSpace(organization.LogoPath) &&
+                File.Exists(organization.LogoPath))
+            {
+                templateSettings.LogoPath = organization.LogoPath;
+            }
+
+            // Keep the existing signature functionality
+            if (!string.IsNullOrWhiteSpace(organization.SignaturePath))
+            {
+                templateSettings.SignaturePath =
+                    organization.SignaturePath;
+            }
 
             templateSettings.SignatoryName =
                 organization.SignatoryName;

@@ -27,27 +27,25 @@ namespace CertificateGenerator
             {
                 using var db = new CertificateDbContext();
 
-                // Load total certificate count
-                int totalCertificates = db.Certificates.Count();
-
+                // Total certificates
                 TotalCertificatesTextBlock.Text =
-                    totalCertificates.ToString();
+                    db.Certificates.Count().ToString();
 
-                // Load the five most recent certificates
-                var recentCertificates = db.Certificates
-                    .AsNoTracking()
-                    .OrderByDescending(c => c.IssueDate)
-                    .Take(5)
-                    .ToList();
-
-                RecentCertificatesDataGrid.ItemsSource =
-                    recentCertificates;
-
-                // Load saved template count
+                // Available templates
                 var templates = TemplateStorage.GetTemplates();
 
                 AvailableTemplatesTextBlock.Text =
                     templates.Count.ToString();
+
+                // Recent certificates
+                var recentCertificates = db.Certificates
+                    .AsNoTracking()
+                    .OrderByDescending(c => c.IssueDate)
+                    .Take(10)
+                    .ToList();
+
+                RecentCertificatesDataGrid.ItemsSource =
+                    recentCertificates;
             }
             catch (Exception ex)
             {
@@ -55,7 +53,7 @@ namespace CertificateGenerator
                     $"Could not load dashboard data:\n{ex.Message}",
                     "Dashboard Error",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    MessageBoxImage.Error);
             }
         }
 
@@ -171,55 +169,71 @@ namespace CertificateGenerator
             };
 
             historyWindow.ShowDialog();
+
+            // Refresh dashboard after history window closes
+            LoadDashboardData();
         }
 
 
-        private void BulkPdfExport_Click(
-            object sender,
-            RoutedEventArgs e)
+        //private void BulkPdfExport_Click(
+        //    object sender,
+        //    RoutedEventArgs e)
+        //{
+        //    var csvDialog = new Microsoft.Win32.OpenFileDialog
+        //    {
+        //        Title = "Select Recipient CSV File",
+        //        Filter = "CSV Files (*.csv)|*.csv"
+        //    };
+
+        //    if (csvDialog.ShowDialog() != true)
+        //        return;
+
+        //    var saveDialog = new Microsoft.Win32.SaveFileDialog
+        //    {
+        //        Title = "Save Bulk Certificate ZIP",
+        //        Filter = "ZIP Files (*.zip)|*.zip",
+        //        FileName = "Certificates.zip"
+        //    };
+
+        //    if (saveDialog.ShowDialog() != true)
+        //        return;
+
+        //    try
+        //    {
+        //        int count = BulkCertificateExporter.ExportFromCsv(
+        //            csvDialog.FileName,
+        //            saveDialog.FileName);
+
+        //        System.Windows.MessageBox.Show(
+        //            $"{count} certificates generated successfully!\n\n" +
+        //            $"Saved to:\n{saveDialog.FileName}",
+        //            "Bulk Export Complete",
+        //            MessageBoxButton.OK,
+        //            MessageBoxImage.Information);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        System.Windows.MessageBox.Show(
+        //            ex.Message,
+        //            "Bulk Export Error",
+        //            MessageBoxButton.OK,
+        //            MessageBoxImage.Error);
+        //    }
+        //}
+
+        private void PdfExportButton_Click(
+    object sender,
+    RoutedEventArgs e)
         {
-            var csvDialog = new Microsoft.Win32.OpenFileDialog
+            var window = new PdfExportWindow
             {
-                Title = "Select Recipient CSV File",
-                Filter = "CSV Files (*.csv)|*.csv"
+                Owner = this
             };
 
-            if (csvDialog.ShowDialog() != true)
-                return;
+            window.ShowDialog();
 
-            var saveDialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Title = "Save Bulk Certificate ZIP",
-                Filter = "ZIP Files (*.zip)|*.zip",
-                FileName = "Certificates.zip"
-            };
-
-            if (saveDialog.ShowDialog() != true)
-                return;
-
-            try
-            {
-                int count = BulkCertificateExporter.ExportFromCsv(
-                    csvDialog.FileName,
-                    saveDialog.FileName);
-
-                System.Windows.MessageBox.Show(
-                    $"{count} certificates generated successfully!\n\n" +
-                    $"Saved to:\n{saveDialog.FileName}",
-                    "Bulk Export Complete",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(
-                    ex.Message,
-                    "Bulk Export Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            LoadDashboardData();
         }
-
         private void OrganizationSettingsButton_Click(
     object sender, RoutedEventArgs e)
         {

@@ -57,23 +57,21 @@ namespace CertificateGenerator
             byte[]? logoBytes = null;
             byte[]? signatureBytes = null;
 
-            if (!string.IsNullOrWhiteSpace(settings.LogoPath)
-                && File.Exists(settings.LogoPath))
+            // Load organization logo
+            if (settings.ShowLogo &&
+                !string.IsNullOrWhiteSpace(settings.LogoPath) &&
+                File.Exists(settings.LogoPath))
             {
                 logoBytes = File.ReadAllBytes(settings.LogoPath);
             }
 
-            if (settings.ShowSignature
-                && !string.IsNullOrWhiteSpace(settings.SignaturePath)
-                && File.Exists(settings.SignaturePath))
+            // Load signature image
+            if (settings.ShowSignature &&
+                !string.IsNullOrWhiteSpace(settings.SignaturePath) &&
+                File.Exists(settings.SignaturePath))
             {
-                signatureBytes = File.ReadAllBytes(settings.SignaturePath);
-            }
-
-            if (!string.IsNullOrWhiteSpace(settings.LogoPath)
-                && File.Exists(settings.LogoPath))
-            {
-                logoBytes = File.ReadAllBytes(settings.LogoPath);
+                signatureBytes = File.ReadAllBytes(
+                    settings.SignaturePath);
             }
 
             Document.Create(document =>
@@ -84,10 +82,9 @@ namespace CertificateGenerator
                     page.Margin(0);
                     page.PageColor(Colors.White);
 
-
                     page.Content().Layers(layers =>
                     {
-                        // Show the border only when enabled.
+                        // Border
                         if (settings.ShowBorder)
                         {
                             layers.PrimaryLayer()
@@ -95,7 +92,7 @@ namespace CertificateGenerator
                                 .BorderColor(borderColor);
                         }
 
-                        // Logo
+                        // Organization Logo
                         if (settings.ShowLogo && logoBytes != null)
                         {
                             AddPositioned(
@@ -106,11 +103,14 @@ namespace CertificateGenerator
                                 55,
                                 scaleX,
                                 scaleY,
-                                element => element.Image(logoBytes).FitArea());
+                                element => element
+                                    .Image(logoBytes)
+                                    .FitArea());
                         }
 
-                        // Signature
-                        if (settings.ShowSignature && signatureBytes != null)
+                        // Signature Image
+                        if (settings.ShowSignature &&
+                            signatureBytes != null)
                         {
                             AddPositioned(
                                 layers,
@@ -125,16 +125,19 @@ namespace CertificateGenerator
                                     .FitArea());
                         }
 
+                        // Signatory details
                         if (settings.ShowSignature)
                         {
                             double signatoryNameY =
-                                settings.SignatureY + settings.SignatureHeight + 4;
+                                settings.SignatureY +
+                                settings.SignatureHeight + 4;
 
                             double signatoryDesignationY =
                                 signatoryNameY + 14;
 
                             // Signatory name
-                            if (!string.IsNullOrWhiteSpace(settings.SignatoryName))
+                            if (!string.IsNullOrWhiteSpace(
+                                settings.SignatoryName))
                             {
                                 AddText(
                                     layers,
@@ -150,7 +153,8 @@ namespace CertificateGenerator
                             }
 
                             // Signatory designation
-                            if (!string.IsNullOrWhiteSpace(settings.SignatoryDesignation))
+                            if (!string.IsNullOrWhiteSpace(
+                                settings.SignatoryDesignation))
                             {
                                 AddText(
                                     layers,
@@ -165,96 +169,157 @@ namespace CertificateGenerator
                             }
                         }
 
-                        // Organization
+                        // Organization Name
                         if (settings.ShowOrganization)
                         {
-                            AddText(layers, organization,
-                                settings.OrganizationX, settings.OrganizationY,
-                                400, 18,
-                                GetColor(settings.OrganizationColor, "#475569"),
-                                scaleX, scaleY, bold: true);
+                            AddText(
+                                layers,
+                                organization,
+                                settings.OrganizationX,
+                                settings.OrganizationY,
+                                400,
+                                18,
+                                GetColor(
+                                    settings.OrganizationColor,
+                                    "#475569"),
+                                scaleX,
+                                scaleY,
+                                bold: true);
                         }
 
-                        // Certificate title
+                        // Certificate Title
                         if (settings.ShowTitle)
                         {
-                            AddText(layers, title,
-                                settings.TitleX, settings.TitleY,
-                                600, 26,
-                                GetColor(settings.TitleColor, "#1D4ED8"),
-                                scaleX, scaleY, bold: true);
+                            AddText(
+                                layers,
+                                title,
+                                settings.TitleX,
+                                settings.TitleY,
+                                600,
+                                26,
+                                GetColor(
+                                    settings.TitleColor,
+                                    "#1D4ED8"),
+                                scaleX,
+                                scaleY,
+                                bold: true);
                         }
 
                         // Subtitle
                         if (settings.ShowSubtitle)
                         {
-                            AddText(layers, subtitle,
-                                settings.SubtitleX, settings.SubtitleY,
-                                500, 15,
-                                GetColor(settings.SubtitleColor, "#000000"),
-                                scaleX, scaleY);
+                            AddText(
+                                layers,
+                                subtitle,
+                                settings.SubtitleX,
+                                settings.SubtitleY,
+                                500,
+                                15,
+                                GetColor(
+                                    settings.SubtitleColor,
+                                    "#000000"),
+                                scaleX,
+                                scaleY);
                         }
 
-                        // Recipient name
+                        // Recipient Name
                         if (settings.ShowRecipient)
                         {
-                            AddText(layers, recipientName,
-                                settings.RecipientX, settings.RecipientY,
-                                500, 30,
-                                GetColor(settings.RecipientColor, "#B8860B"),
-                                scaleX, scaleY, bold: true);
+                            AddText(
+                                layers,
+                                recipientName,
+                                settings.RecipientX,
+                                settings.RecipientY,
+                                500,
+                                30,
+                                GetColor(
+                                    settings.RecipientColor,
+                                    "#B8860B"),
+                                scaleX,
+                                scaleY,
+                                bold: true);
                         }
 
-                        // Course name
+                        // Course Name
                         if (settings.ShowCourse)
                         {
-                            AddText(layers, courseName,
-                                settings.CourseX, settings.CourseY,
-                                550, 18,
-                                GetColor(settings.CourseColor, "#000000"),
-                                scaleX, scaleY, bold: true);
+                            AddText(
+                                layers,
+                                courseName,
+                                settings.CourseX,
+                                settings.CourseY,
+                                550,
+                                18,
+                                GetColor(
+                                    settings.CourseColor,
+                                    "#000000"),
+                                scaleX,
+                                scaleY,
+                                bold: true);
                         }
 
-                        // Date
+                        // Certificate Date
                         if (settings.ShowDate)
                         {
-                            AddText(layers,
+                            AddText(
+                                layers,
                                 $"Date: {certificateDate:dd MMMM yyyy}",
-                                settings.DateX, settings.DateY,
-                                300, 13,
-                                GetColor(settings.DateColor, "#000000"),
-                                scaleX, scaleY);
+                                settings.DateX,
+                                settings.DateY,
+                                300,
+                                13,
+                                GetColor(
+                                    settings.DateColor,
+                                    "#000000"),
+                                scaleX,
+                                scaleY);
                         }
 
                         // Footer
                         if (settings.ShowFooter)
                         {
-                            AddText(layers, footer,
-                                settings.FooterX, settings.FooterY,
-                                500, 13,
-                                GetColor(settings.FooterColor, "#000000"),
-                                scaleX, scaleY);
+                            AddText(
+                                layers,
+                                footer,
+                                settings.FooterX,
+                                settings.FooterY,
+                                500,
+                                13,
+                                GetColor(
+                                    settings.FooterColor,
+                                    "#000000"),
+                                scaleX,
+                                scaleY);
                         }
 
                         // Certificate ID
                         if (settings.ShowCertificateId)
                         {
-                            AddText(layers,
+                            AddText(
+                                layers,
                                 $"Certificate ID: {certificateId}",
-                                settings.CertificateIdX, settings.CertificateIdY,
-                                300, 11,
-                                GetColor(settings.CertificateIdColor, "#64748B"),
-                                scaleX, scaleY);
+                                settings.CertificateIdX,
+                                settings.CertificateIdY,
+                                300,
+                                11,
+                                GetColor(
+                                    settings.CertificateIdColor,
+                                    "#64748B"),
+                                scaleX,
+                                scaleY);
                         }
 
-                        // Custom text elements
+                        // Custom Text Elements
                         if (settings.CustomTextElements != null)
                         {
-                            foreach (var item in settings.CustomTextElements)
+                            foreach (var item in
+                                settings.CustomTextElements)
                             {
                                 if (item == null ||
                                     string.IsNullOrWhiteSpace(item.Text))
+                                {
                                     continue;
+                                }
 
                                 AddText(
                                     layers,
@@ -263,19 +328,20 @@ namespace CertificateGenerator
                                     item.Y,
                                     400,
                                     item.FontSize,
-                                    GetColor(item.Color, "#000000"),
+                                    GetColor(
+                                        item.Color,
+                                        "#000000"),
                                     scaleX,
                                     scaleY,
                                     centered: false);
                             }
                         }
-                    }); // Closes Layers
-
-                }); // Closes Page               
-
+                    });
+                });
             }).GeneratePdf(outputPath);
         }
 
+        // Add positioned text
         private static void AddText(
             LayersDescriptor layers,
             string? text,
@@ -292,17 +358,21 @@ namespace CertificateGenerator
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            float height = (float)Math.Max(35, fontSize * 2.5);
+            float height = (float)Math.Max(
+                35,
+                fontSize * 2.5);
 
             AddPositioned(
                 layers,
-                x, y,
-                (float)width, height,
-                scaleX, scaleY,
+                x,
+                y,
+                (float)width,
+                height,
+                scaleX,
+                scaleY,
                 element =>
                 {
-                    var textContainer = element
-                        .AlignTop();
+                    var textContainer = element.AlignTop();
 
                     if (centered)
                         textContainer = textContainer.AlignCenter();
@@ -319,6 +389,7 @@ namespace CertificateGenerator
                 });
         }
 
+        // Add positioned elements
         private static void AddPositioned(
             LayersDescriptor layers,
             double x,
@@ -337,6 +408,7 @@ namespace CertificateGenerator
                 .Element(content);
         }
 
+        // Default text values
         private static string ValueOrDefault(
             string? value,
             string defaultValue)
@@ -346,6 +418,7 @@ namespace CertificateGenerator
                 : value;
         }
 
+        // Validate and retrieve colors
         private static string GetColor(
             string? value,
             string defaultColor)
