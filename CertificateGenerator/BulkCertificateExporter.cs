@@ -12,6 +12,7 @@ namespace CertificateGenerator
 {
     public static class BulkCertificateExporter
     {
+        private const int MaxBatchSize = 500;
         public static int ExportFromExcel(
             string excelPath,
             string zipPath,
@@ -31,10 +32,19 @@ namespace CertificateGenerator
             // 1. Read and validate Excel data.
             var recipients = ReadRecipients(excelPath);
 
-            // 2. Generate IDs for missing IDs.
+            // 2. Validate maximum batch size.
+            if (recipients.Count > MaxBatchSize)
+            {
+                throw new InvalidOperationException(
+                    $"Your Excel file contains {recipients.Count} certificates.\n\n" +
+                    $"The maximum allowed per batch is {MaxBatchSize}.\n\n" +
+                    "Please split your Excel file into smaller batches.");
+            }
+
+            // 3. Generate IDs for missing IDs.
             GenerateMissingIds(recipients);
 
-            // 3. Check database for existing IDs.
+            // 4. Check database for existing IDs.
             CheckExistingCertificateIds(recipients);
 
             string fullZipPath = Path.GetFullPath(zipPath);
@@ -57,7 +67,7 @@ namespace CertificateGenerator
 
             try
             {
-                // 4. Generate individual PDFs.
+                // 5. Generate individual PDFs.
                 var usedFileNames = new HashSet<string>(
                     StringComparer.OrdinalIgnoreCase);
 
@@ -89,7 +99,7 @@ namespace CertificateGenerator
                         settings);
                 }
 
-                // 5. Create ZIP in a temporary location.
+                // 6. Create ZIP in a temporary location.
                 using (var archive = ZipFile.Open(
                     temporaryZipPath, ZipArchiveMode.Create))
                 {
@@ -103,7 +113,7 @@ namespace CertificateGenerator
                     }
                 }
 
-                // 6. Save records and publish ZIP together as closely
+                // 7. Save records and publish ZIP together as closely
                 // as possible. A failed database save removes the ZIP.
                 using (var db = new CertificateDbContext())
                 using (var transaction = db.Database.BeginTransaction())
