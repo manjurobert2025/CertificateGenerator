@@ -71,11 +71,35 @@ namespace CertificateGenerator
                 return;
             }
 
+            // Reload templates from JSON storage
+            var latestTemplates = TemplateStorage.GetTemplates();
+
+            // Find the latest saved version using the original file path
+            var latestTemplate = latestTemplates.FirstOrDefault(t =>
+                string.Equals(
+                    t.FilePath,
+                    template.FilePath,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (latestTemplate == null)
+            {
+                System.Windows.MessageBox.Show(
+                    "Could not find the saved template.",
+                    "Template Preview",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            // Open preview using the latest settings
             var preview = new TemplatePreviewWindow(
-                template.Settings)
+                latestTemplate.Settings)
             {
                 Owner = this
             };
+
+            preview.ShowDialog();
 
             preview.ShowDialog();
         }
