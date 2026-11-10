@@ -54,11 +54,11 @@ namespace CertificateGenerator
                 Directory.CreateDirectory(zipDirectory);
 
             string tempFolder = Path.Combine(
-                Path.GetTempPath(),
-                "CertificateBulk_" + Guid.NewGuid().ToString("N"));
+     Environment.GetFolderPath(
+         Environment.SpecialFolder.MyDocuments),
+     "CertificateGenerator");
 
             Directory.CreateDirectory(tempFolder);
-
             string temporaryZipPath = Path.Combine(
                 zipDirectory ?? Path.GetTempPath(),
                 Guid.NewGuid().ToString("N") + ".zip");
@@ -87,8 +87,14 @@ namespace CertificateGenerator
                         suffix++;
                     }
 
-                    string pdfPath = Path.Combine(
-                        tempFolder, fileName);
+                    string folder = Path.Combine(
+     Environment.GetFolderPath(
+         Environment.SpecialFolder.MyDocuments),
+     "CertificateGenerator");
+
+                    Directory.CreateDirectory(folder);
+
+                    string pdfPath = Path.Combine(folder, fileName);
 
                     CertificatePdfGenerator.Generate(
                         recipient.Name,
@@ -97,6 +103,12 @@ namespace CertificateGenerator
                         recipient.Id,
                         pdfPath,
                         settings);
+                    System.Windows.MessageBox.Show(
+    $"Recipient ID: {recipient.Id}\n\n" +
+    $"Generated filename: {fileName}\n\n" +
+    $"Full path: {pdfPath}\n\n" +
+    $"File exists: {File.Exists(pdfPath)}",
+    "Bulk PDF Diagnostic");
                 }
 
                 // 6. Create ZIP in a temporary location.
@@ -182,8 +194,8 @@ namespace CertificateGenerator
                 if (File.Exists(temporaryZipPath))
                     File.Delete(temporaryZipPath);
 
-                if (Directory.Exists(tempFolder))
-                    Directory.Delete(tempFolder, true);
+                //if (Directory.Exists(tempFolder))
+                //    Directory.Delete(tempFolder, true);
             }
         }
 

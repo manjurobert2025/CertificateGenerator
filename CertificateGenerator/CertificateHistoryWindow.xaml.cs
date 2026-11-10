@@ -80,15 +80,11 @@ namespace CertificateGenerator
         }
 
         private void PreviewSelectedButton_Click(
-            object sender, RoutedEventArgs e)
+     object sender, RoutedEventArgs e)
         {
             if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
-                System.Windows.MessageBox.Show(
-                    "Please select a certificate from the history list.",
-                    "No Certificate Selected",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("Please select a certificate.");
                 return;
             }
 
@@ -106,11 +102,7 @@ namespace CertificateGenerator
                 if (!File.Exists(pdfPath))
                 {
                     System.Windows.MessageBox.Show(
-                        $"The PDF for certificate {certificate.CertificateId} was not found.\n\n" +
-                        $"Expected location:\n{pdfPath}",
-                        "PDF Not Found",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                        $"PDF not found:\n{pdfPath}");
                     return;
                 }
 
@@ -123,10 +115,7 @@ namespace CertificateGenerator
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    "Could not open the certificate PDF.\n\n" + ex.Message,
-                    "Preview Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    $"Could not open PDF:\n{ex.Message}");
             }
         }
 

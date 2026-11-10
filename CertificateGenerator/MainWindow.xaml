@@ -43,11 +43,11 @@
                         HorizontalContentAlignment="Left"
                         Click="GenerateCertificate_Click"/>
 
-                <Button Content="Bulk Generation"
+                <!--<Button Content="Bulk Generation"
                         Margin="0,5"
                         Padding="12"
                         HorizontalContentAlignment="Stretch"
-                        Click="BulkGeneration_Click"/>
+                        Click="BulkGeneration_Click"/>-->
                 <!--<Button Content="Bulk PDF Export"       
         Height="40"
         Margin="5"

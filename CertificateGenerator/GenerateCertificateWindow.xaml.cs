@@ -156,6 +156,11 @@ namespace CertificateGenerator
                     string pdfPath = Path.Combine(
                         folder,
                         $"{certificate.CertificateId}.pdf");
+                    System.Windows.MessageBox.Show(
+    $"History Certificate ID: {certificate.CertificateId}\n\n" +
+    $"Expected PDF: {pdfPath}\n\n" +
+    $"File Exists: {File.Exists(pdfPath)}",
+    "Preview Path Check");
 
                     if (SelectedTemplate == null)
                     {
@@ -180,6 +185,11 @@ namespace CertificateGenerator
                         certificate.CertificateId,
                         pdfPath,
                         templateSettings);
+                    System.Windows.MessageBox.Show(
+    $"Certificate ID: {certificate.CertificateId}\n\n" +
+    $"PDF path: {pdfPath}\n\n" +
+    $"File exists: {File.Exists(pdfPath)}",
+    "Individual PDF Diagnostic");
 
                     var settings = SelectedTemplate?.Settings;
 

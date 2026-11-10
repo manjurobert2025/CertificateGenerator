@@ -339,6 +339,11 @@ namespace CertificateGenerator
                     });
                 });
             }).GeneratePdf(outputPath);
+            System.Diagnostics.Debug.WriteLine(
+    $"PDF generated at: {outputPath}");
+
+            System.Diagnostics.Debug.WriteLine(
+                $"PDF exists: {File.Exists(outputPath)}");
         }
 
         // Add positioned text

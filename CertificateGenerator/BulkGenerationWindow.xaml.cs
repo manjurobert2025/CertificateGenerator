@@ -685,7 +685,7 @@ namespace CertificateGenerator
                 ValidateRows();
 
                 System.Windows.MessageBox.Show(
-                    $"Successfully saved {generated} certificate records.\n\nSelect Export Bulk PDFs to create the PDF files.",
+                    $"Successfully saved {generated} certificate records.",
                     "Database Save Complete",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -788,7 +788,11 @@ namespace CertificateGenerator
                             selectedTemplate.Settings);
 
                         exported++;
+                        System.Windows.MessageBox.Show(
+          $"PDF exists: {File.Exists(outputPath)}\n\n{outputPath}",
+          "Generation Check");
                     }
+                   
                     catch (Exception ex)
                     {
                         errors.Add(
