@@ -303,37 +303,35 @@ namespace CertificateGenerator
         }
 
         private static void GenerateMissingIds(
-            List<Recipient> recipients)
+    List<Recipient> recipients)
         {
-            string batchToken = Guid.NewGuid()
-                .ToString("N")
-                .Substring(0, 8)
-                .ToUpperInvariant();
+            int currentYear = DateTime.Today.Year;
 
-            var usedIds = new HashSet<string>(
-                recipients
-                    .Where(r => !string.IsNullOrWhiteSpace(r.Id))
-                    .Select(r => r.Id),
-                StringComparer.OrdinalIgnoreCase);
+            using var db = new CertificateDbContext();
 
-            int sequence = 1;
+            var existingIds = db.Certificates
+                .AsNoTracking()
+                .Select(c => c.CertificateId)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // Include IDs already supplied in the Excel file.
+            foreach (var recipient in recipients)
+            {
+                if (!string.IsNullOrWhiteSpace(recipient.Id))
+                    existingIds.Add(recipient.Id);
+            }
 
             foreach (var recipient in recipients)
             {
                 if (!string.IsNullOrWhiteSpace(recipient.Id))
                     continue;
 
-                string generatedId;
+                string generatedId =
+                    CertificateIdGenerator.GenerateNextId(
+                        existingIds,
+                        currentYear);
 
-                do
-                {
-                    generatedId =
-                        $"CERT-{DateTime.Now.Year}-{batchToken}-{sequence:D3}";
-
-                    sequence++;
-                }
-                while (!usedIds.Add(generatedId));
-
+                existingIds.Add(generatedId);
                 recipient.Id = generatedId;
             }
         }

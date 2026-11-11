@@ -623,45 +623,20 @@ namespace CertificateGenerator
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 int currentYear = DateTime.Today.Year;
-                string prefix = $"CERT-{currentYear}-";
-
-                int highestNumber = existingIds
-                    .Where(id => id.StartsWith(
-                        prefix,
-                        StringComparison.OrdinalIgnoreCase))
-                    .Select(id =>
-                    {
-                        string suffix = id.Substring(prefix.Length);
-
-                        return int.TryParse(suffix, out int number)
-                            ? number
-                            : 0;
-                    })
-                    .DefaultIfEmpty(0)
-                    .Max();
-
-                int nextNumber = highestNumber + 1;
                 int generated = 0;
 
                 foreach (var row in validRows)
                 {
-                    string certificateId = row.CertificateId.Trim();
+                    string certificateId =
+                        CertificateIdGenerator.GenerateNextId(
+                            existingIds,
+                            currentYear);
+                    System.Windows.MessageBox.Show(
+    $"New ID generated: {certificateId}");
 
-                    if (string.IsNullOrWhiteSpace(certificateId))
-                    {
-                        do
-                        {
-                            certificateId = $"{prefix}{nextNumber:D5}";
-                            nextNumber++;
-                        }
-                        while (existingIds.Contains(certificateId));
-                    }
-
-                    if (!existingIds.Add(certificateId))
-                    {
-                        row.ValidationMessage = "ID already exists";
-                        continue;
-                    }
+                    // Add the new ID immediately so the next row receives
+                    // the following number in the same bulk operation.
+                    existingIds.Add(certificateId);
 
                     db.Certificates.Add(new CertificateRecord
                     {
@@ -792,7 +767,7 @@ namespace CertificateGenerator
           $"PDF exists: {File.Exists(outputPath)}\n\n{outputPath}",
           "Generation Check");
                     }
-                   
+
                     catch (Exception ex)
                     {
                         errors.Add(
@@ -822,11 +797,11 @@ namespace CertificateGenerator
             }
             catch (Exception ex)
             {
-                    System.Windows.MessageBox.Show(
-                    $"Could not export PDFs:\n{ex.Message}",
-                    "PDF Export Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(
+                $"Could not export PDFs:\n{ex.Message}",
+                "PDF Export Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
             }
         }
 

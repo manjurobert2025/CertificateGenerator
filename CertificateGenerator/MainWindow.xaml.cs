@@ -61,6 +61,7 @@ namespace CertificateGenerator
         private void BulkGeneration_Click(
     object sender, RoutedEventArgs e)
         {
+            System.Windows.MessageBox.Show("Bulk generation handler reached");
             var window = new BulkGenerationWindow
             {
                 Owner = this

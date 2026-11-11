@@ -82,16 +82,7 @@ namespace CertificateGenerator
             string courseName = CourseNameTextBox.Text.Trim();
            
             var selectedTemplate = TemplatesComboBox.SelectedItem as SavedTemplate;
-     //       System.Windows.MessageBox.Show(
-     //$"Selected item type: " +
-     //$"{TemplatesComboBox.SelectedItem?.GetType().FullName ?? "NULL"}\n" +
-     //$"Selected template name: " +
-     //$"{selectedTemplate?.Name ?? "NULL"}\n" +
-     //$"Settings template name: " +
-     //$"{selectedTemplate?.Settings?.TemplateName ?? "NULL"}\n" +
-     //$"Custom elements: " +
-     //$"{selectedTemplate?.Settings?.CustomTextElements?.Count ?? 0}");
-
+     
             if (string.IsNullOrWhiteSpace(recipientName))
             {
                 System.Windows.MessageBox.Show("Please enter the recipient name.");
@@ -117,21 +108,27 @@ namespace CertificateGenerator
 
             try
             {
-                using var db = new CertificateDbContext();
+                using var db = new CertificateDbContext();      
+
+                
+
+                var existingIds = db.Certificates
+                    .Select(c => c.CertificateId)
+                    .ToList();
 
                 var certificate = new CertificateRecord
                 {
+                    CertificateId =
+                        CertificateIdGenerator.GenerateNextId(
+                            existingIds,
+                            DateTime.Today.Year),
+
                     RecipientName = recipientName,
                     CourseName = courseName,
                     IssueDate = certificateDate
                 };
 
                 db.Certificates.Add(certificate);
-                db.SaveChanges();
-
-                certificate.CertificateId =
-                    $"CERT-{DateTime.Now.Year}-{certificate.Id:D5}";
-
                 db.SaveChanges();
 
                 _lastSavedCertificate = certificate;
