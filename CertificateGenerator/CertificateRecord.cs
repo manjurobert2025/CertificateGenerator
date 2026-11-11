@@ -14,5 +14,6 @@ namespace CertificateGenerator
         public string CourseName { get; set; } = "";
 
         public DateTime IssueDate { get; set; }
+        public string PdfPath { get; set; } = "";
     }
 }

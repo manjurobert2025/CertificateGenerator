@@ -70,6 +70,8 @@ namespace CertificateGenerator
                 // 5. Generate individual PDFs.
                 var usedFileNames = new HashSet<string>(
                     StringComparer.OrdinalIgnoreCase);
+                var generatedPdfPaths = new Dictionary<string, string>(
+    StringComparer.OrdinalIgnoreCase);
 
                 foreach (var recipient in recipients)
                 {
@@ -103,12 +105,7 @@ namespace CertificateGenerator
                         recipient.Id,
                         pdfPath,
                         settings);
-                    System.Windows.MessageBox.Show(
-    $"Recipient ID: {recipient.Id}\n\n" +
-    $"Generated filename: {fileName}\n\n" +
-    $"Full path: {pdfPath}\n\n" +
-    $"File exists: {File.Exists(pdfPath)}",
-    "Bulk PDF Diagnostic");
+                    generatedPdfPaths[recipient.Id] = pdfPath;
                 }
 
                 // 6. Create ZIP in a temporary location.
@@ -153,7 +150,8 @@ namespace CertificateGenerator
                             CertificateId = recipient.Id,
                             RecipientName = recipient.Name,
                             CourseName = recipient.Course,
-                            IssueDate = recipient.IssueDate
+                            IssueDate = recipient.IssueDate,
+                            PdfPath = generatedPdfPaths[recipient.Id]
                         });
                     }
 

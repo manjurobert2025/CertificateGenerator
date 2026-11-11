@@ -1,15 +1,18 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.IO;
 
 namespace CertificateGenerator
 {
     public partial class CertificateHistoryWindow : Window
     {
+        private List<CertificateRecord> _allCertificates = new();
         public CertificateHistoryWindow()
         {
             InitializeComponent();
@@ -22,17 +25,17 @@ namespace CertificateGenerator
             {
                 using var db = new CertificateDbContext();
 
-                var certificates = db.Certificates
+                _allCertificates = db.Certificates
+                    .AsNoTracking()
                     .OrderByDescending(c => c.Id)
                     .ToList();
 
-                CertificateDataGrid.ItemsSource = certificates;
+                ApplySearch();
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    "Could not load certificate history.\n\n" +
-                    ex.Message,
+                    "Could not load certificate history.\n\n" + ex.Message,
                     "History Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -43,44 +46,48 @@ namespace CertificateGenerator
             object sender, RoutedEventArgs e)
         {
             LoadCertificates();
+            SearchTextBox.Clear();
+        }
+
+        private void ClearSearchButton_Click(
+    object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Clear();
+            ApplySearch();
         }
 
         private void SearchTextBox_TextChanged(
             object sender, TextChangedEventArgs e)
         {
-            string search = SearchTextBox.Text.Trim()
-                .ToLowerInvariant();
+            ApplySearch();
+        }
 
-            try
-            {
-                using var db = new CertificateDbContext();
+        private void SearchButton_Click(
+    object sender, RoutedEventArgs e)
+        {
+            ApplySearch();
+        }  
 
-                var query = db.Certificates.AsQueryable();
+        private void ApplySearch()
+        {
+            string search = SearchTextBox.Text.Trim();
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    query = query.Where(c =>
-                        (c.CertificateId ?? "").ToLower().Contains(search) ||
-                        (c.RecipientName ?? "").ToLower().Contains(search) ||
-                        (c.CourseName ?? "").ToLower().Contains(search));
-                }
+            var filteredCertificates = _allCertificates
+                .Where(c =>
+                    string.IsNullOrWhiteSpace(search) ||
+                    (c.CertificateId ?? "").Contains(
+                        search, StringComparison.OrdinalIgnoreCase) ||
+                    (c.RecipientName ?? "").Contains(
+                        search, StringComparison.OrdinalIgnoreCase) ||
+                    (c.CourseName ?? "").Contains(
+                        search, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-                CertificateDataGrid.ItemsSource = query
-                    .OrderByDescending(c => c.Id)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(
-                    "Could not search certificates.\n\n" + ex.Message,
-                    "Search Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            CertificateDataGrid.ItemsSource = filteredCertificates;
         }
 
         private void PreviewSelectedButton_Click(
-     object sender, RoutedEventArgs e)
+    object sender, RoutedEventArgs e)
         {
             if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
@@ -90,20 +97,30 @@ namespace CertificateGenerator
 
             try
             {
-                string folder = Path.Combine(
-                    Environment.GetFolderPath(
-                        Environment.SpecialFolder.MyDocuments),
-                    "CertificateGenerator");
+                string pdfPath = certificate.PdfPath;
 
-                string pdfPath = Path.Combine(
-                    folder,
-                    $"{certificate.CertificateId}.pdf");
-
-                if (!File.Exists(pdfPath))
+                // Fallback for older records
+                if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
                 {
-                    System.Windows.MessageBox.Show(
-                        $"PDF not found:\n{pdfPath}");
-                    return;
+                    string folder = Path.Combine(
+                        Environment.GetFolderPath(
+                            Environment.SpecialFolder.MyDocuments),
+                        "CertificateGenerator");
+
+                    string oldPath = Path.Combine(
+                        folder,
+                        $"{certificate.CertificateId}.pdf");
+
+                    if (File.Exists(oldPath))
+                    {
+                        pdfPath = oldPath;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show(
+                            $"PDF not found.\n\nSaved path: {certificate.PdfPath}");
+                        return;
+                    }
                 }
 
                 Process.Start(new ProcessStartInfo

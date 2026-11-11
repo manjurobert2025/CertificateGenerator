@@ -185,12 +185,14 @@ namespace CertificateGenerator
                         certificate.CertificateId,
                         pdfPath,
                         templateSettings);
-                    System.Windows.MessageBox.Show(
-    $"Certificate ID: {certificate.CertificateId}\n\n" +
-    $"PDF path: {pdfPath}\n\n" +
-    $"File exists: {File.Exists(pdfPath)}",
-    "Individual PDF Diagnostic");
+                    //                System.Windows.MessageBox.Show(
+                    //$"Certificate ID: {certificate.CertificateId}\n\n" +
+                    //$"PDF path: {pdfPath}\n\n" +
+                    //$"File exists: {File.Exists(pdfPath)}",
+                    //"Individual PDF Diagnostic");
+                    certificate.PdfPath = pdfPath;
 
+                    db.SaveChanges();
                     var settings = SelectedTemplate?.Settings;
 
                     //System.Windows.MessageBox.Show(
