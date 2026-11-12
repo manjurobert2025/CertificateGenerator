@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using CertificateGenerator.Services;
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using System;
@@ -9,6 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using CertificateGenerator.Data;
+using CertificateGenerator.Models;
+
 
 namespace CertificateGenerator
 {

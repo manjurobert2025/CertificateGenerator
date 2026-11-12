@@ -1,9 +1,9 @@
-﻿
+﻿using CertificateGenerator.Models;
 using System;
 using System.IO;
 using System.Text.Json;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Services
 {
     public static class OrganizationSettingsStorage
     {
@@ -14,7 +14,15 @@ namespace CertificateGenerator
                 "CertificateGenerator");
 
         private static readonly string FilePath =
-            Path.Combine(FolderPath, "organization-settings.json");
+            Path.Combine(
+                FolderPath,
+                "organization-settings.json");
+
+        private static readonly JsonSerializerOptions JsonOptions =
+            new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
 
         public static OrganizationSettings Load()
         {
@@ -28,7 +36,15 @@ namespace CertificateGenerator
                 return JsonSerializer.Deserialize<OrganizationSettings>(
                     json) ?? new OrganizationSettings();
             }
-            catch
+            catch (JsonException)
+            {
+                return new OrganizationSettings();
+            }
+            catch (IOException)
+            {
+                return new OrganizationSettings();
+            }
+            catch (UnauthorizedAccessException)
             {
                 return new OrganizationSettings();
             }
@@ -36,14 +52,13 @@ namespace CertificateGenerator
 
         public static void Save(OrganizationSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings);
+
             Directory.CreateDirectory(FolderPath);
 
             string json = JsonSerializer.Serialize(
                 settings,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                JsonOptions);
 
             File.WriteAllText(FilePath, json);
         }

@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Services
 {
     public static class TemplateStorage
     {
@@ -20,6 +19,7 @@ namespace CertificateGenerator
                     "Templates");
 
                 Directory.CreateDirectory(folder);
+
                 return folder;
             }
         }
@@ -28,8 +28,11 @@ namespace CertificateGenerator
         {
             var templates = new List<SavedTemplate>();
 
-            foreach (string file in Directory.GetFiles(
-                         TemplatesFolder, "*.json"))
+            string[] files = Directory.GetFiles(
+                TemplatesFolder,
+                "*.json");
+
+            foreach (string file in files)
             {
                 try
                 {
@@ -39,38 +42,63 @@ namespace CertificateGenerator
                         JsonSerializer.Deserialize<CertificateTemplateSettings>(
                             json);
 
-                    if (settings != null)
+                    if (settings == null)
+                        continue;
+
+                    templates.Add(new SavedTemplate
                     {
-                        System.Diagnostics.Debug.WriteLine(
-    $"Template: {settings.TemplateName}, " +
-    $"Custom elements: {settings.CustomTextElements?.Count ?? 0}");
-                        templates.Add(new SavedTemplate
-                        {
-                            FilePath = file,
-                            Settings = settings,
-                            Name = settings.TemplateName,
-                        });
-                    }
+                        FilePath = file,
+                        Settings = settings,
+                        Name = string.IsNullOrWhiteSpace(
+                            settings.TemplateName)
+                                ? "My Template"
+                                : settings.TemplateName
+                    });
                 }
-                catch (Exception)
+                catch (JsonException)
                 {
                     // Skip invalid JSON files.
+                }
+                catch (IOException)
+                {
+                    // Skip files that cannot be read.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Skip files that cannot be accessed.
                 }
             }
 
             return templates
-                .OrderBy(t => t.Settings.TemplateName)
+                .OrderBy(
+                    template => template.Name,
+                    StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
 
         public static string CreateTemplatePath(string name)
         {
+            char[] invalidCharacters =
+                Path.GetInvalidFileNameChars();
+
             string safeName = string.Join(
                 "_",
-                name.Split(Path.GetInvalidFileNameChars()));
+                (name ?? string.Empty).Split(
+                    invalidCharacters,
+                    StringSplitOptions.RemoveEmptyEntries));
+
+            safeName = safeName.Trim(' ', '.');
 
             if (string.IsNullOrWhiteSpace(safeName))
+            {
                 safeName = "CertificateTemplate";
+            }
+
+            // Keep the filename reasonably short.
+            if (safeName.Length > 80)
+            {
+                safeName = safeName.Substring(0, 80);
+            }
 
             return Path.Combine(
                 TemplatesFolder,
@@ -81,12 +109,14 @@ namespace CertificateGenerator
     public class SavedTemplate
     {
         public string Name { get; set; } = "My Template";
+
         public string FilePath { get; set; } = "";
 
         public CertificateTemplateSettings Settings { get; set; } =
             new CertificateTemplateSettings();
 
         public string DisplayName =>
-            $"{Settings.TemplateName} — {Settings.CertificateTitle}";
+            $"{Settings?.TemplateName ?? Name} — " +
+            $"{Settings?.CertificateTitle ?? string.Empty}";
     }
 }

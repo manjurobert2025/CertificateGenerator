@@ -1,4 +1,6 @@
 ﻿
+using CertificateGenerator.Models;
+using CertificateGenerator.Services;
 using Microsoft.Win32;
 using System;
 using System.IO;

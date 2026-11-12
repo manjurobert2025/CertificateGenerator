@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CertificateGenerator.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Data
 {
     public class CertificateDbContext : DbContext
     {

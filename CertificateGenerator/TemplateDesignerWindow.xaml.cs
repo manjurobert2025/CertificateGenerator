@@ -16,6 +16,8 @@ using WpfBrushConverter = System.Windows.Media.BrushConverter;
 using WpfBrushes = System.Windows.Media.Brushes;
 using WpfColor = System.Windows.Media.Color;
 using WpfColors = System.Windows.Media.Colors;
+using CertificateGenerator.Models;
+using CertificateGenerator.Services;
 
 namespace CertificateGenerator
 {
@@ -104,6 +106,7 @@ namespace CertificateGenerator
         private System.Windows.Point _dragStartPoint;
         private double _elementStartLeft;
         private double _elementStartTop;
+        private UIElement? _selectedElement;
 
         private string _borderColor = "";
         private string _organizationColor = "";
@@ -332,7 +335,7 @@ namespace CertificateGenerator
             UpdateSelectedColorPreview();
         }
 
-       
+
         private static void SelectComboItem(
             WpfComboBox comboBox,
             string? value)
@@ -450,44 +453,36 @@ namespace CertificateGenerator
 
         }
 
-        private static void ApplyCustomColor(
-            TextBlock element, string? hex)
+        private static WpfBrush? TryCreateBrush(string? colorValue)
         {
-            if (string.IsNullOrWhiteSpace(hex))
-                return;
+            if (string.IsNullOrWhiteSpace(colorValue))
+                return null;
 
             try
             {
-                var brush = new System.Windows.Media.BrushConverter()
-     .ConvertFromString(hex) as System.Windows.Media.Brush;
-
-                if (brush != null)
-                    element.Foreground = brush;
+                return new WpfBrushConverter().ConvertFromString(colorValue)
+                    as WpfBrush;
             }
             catch
             {
-                // Keep the current color if the saved color is invalid.
+                return null;
             }
         }
 
-        private static void ApplyCustomBorderColor(
-            Border element, string? hex)
+        private static void ApplyCustomColor(TextBlock element, string? hex)
         {
-            if (string.IsNullOrWhiteSpace(hex))
-                return;
+            WpfBrush? brush = TryCreateBrush(hex);
 
-            try
-            {
-                var brush = new System.Windows.Media.BrushConverter()
-     .ConvertFromString(hex) as System.Windows.Media.Brush;
+            if (brush != null)
+                element.Foreground = brush;
+        }
 
-                if (brush != null)
-                    element.BorderBrush = brush;
-            }
-            catch
-            {
-                // Keep the current border color if invalid.
-            }
+        private static void ApplyCustomBorderColor(Border element, string? hex)
+        {
+            WpfBrush? brush = TryCreateBrush(hex);
+
+            if (brush != null)
+                element.BorderBrush = brush;
         }
 
         private string GetSelectedElementColor()
@@ -522,19 +517,9 @@ namespace CertificateGenerator
                 return;
             }
 
-            try
-            {
-                var brush = new System.Windows.Media.BrushConverter()
-                    .ConvertFromString(hex) as System.Windows.Media.Brush;
-
-                if (brush != null)
-                    SelectedColorPreview.Background = brush;
-            }
-            catch
-            {
-                SelectedColorPreview.Background =
-                    System.Windows.Media.Brushes.Transparent;
-            }
+            WpfBrush? brush = TryCreateBrush(hex);
+            SelectedColorPreview.Background =
+                brush ?? WpfBrushes.Transparent;
         }
 
         private void ChooseElementColor_Click(
@@ -696,23 +681,8 @@ namespace CertificateGenerator
 
         private static WpfBrush CreateBrush(string? hex)
         {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(hex))
-                {
-                    var brush = new WpfBrushConverter()
-                        .ConvertFromString(hex) as WpfBrush;
-
-                    if (brush != null)
-                        return brush;
-                }
-            }
-            catch
-            {
-                // Use black for an invalid saved custom color.
-            }
-
-            return WpfBrushes.Black;
+            // Use black when a saved custom color is missing or invalid.
+            return TryCreateBrush(hex) ?? WpfBrushes.Black;
         }
 
         // RESTORE CUSTOM TEXT FROM A SAVED TEMPLATE
@@ -829,8 +799,6 @@ namespace CertificateGenerator
             Canvas.SetLeft(_draggedElement, newLeft);
             Canvas.SetTop(_draggedElement, newTop);
         }
-        private UIElement? _selectedElement;
-
         private void DeleteSelectedElement_Click(
             object sender, RoutedEventArgs e)
         {
@@ -1023,7 +991,7 @@ namespace CertificateGenerator
     PreviewFooterTextBlock.Visibility == Visibility.Visible,
 
                     ShowCertificateId =
-    PreviewCertificateIdTextBlock.Visibility == Visibility.Visible,                   
+    PreviewCertificateIdTextBlock.Visibility == Visibility.Visible,
 
                     SignatureX = Canvas.GetLeft(SignatureImage),
                     SignatureY = Canvas.GetTop(SignatureImage),

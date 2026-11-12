@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Data
 {
     public partial class App : System.Windows.Application
     {

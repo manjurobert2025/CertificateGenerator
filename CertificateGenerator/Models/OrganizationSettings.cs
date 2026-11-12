@@ -1,5 +1,4 @@
-﻿
-namespace CertificateGenerator
+﻿namespace CertificateGenerator.Models
 {
     public class OrganizationSettings
     {

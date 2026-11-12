@@ -1,5 +1,5 @@
-﻿
-using System;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -36,6 +36,16 @@ namespace CertificateGenerator
             string outputPath,
             CertificateTemplateSettings? settings)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
+            string fullOutputPath = Path.GetFullPath(outputPath);
+            string? outputDirectory = Path.GetDirectoryName(fullOutputPath);
+
+            if (!string.IsNullOrWhiteSpace(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
             QuestPDF.Settings.License = LicenseType.Community;
 
             settings ??= new CertificateTemplateSettings();
@@ -47,32 +57,21 @@ namespace CertificateGenerator
                 settings.CertificateTitle,
                 "CERTIFICATE OF ACHIEVEMENT");
 
-            string subtitle = settings.Subtitle ?? "";
-            string organization = settings.OrganizationName ?? "";
-            string footer = settings.FooterText ?? "";
+            string subtitle = settings.Subtitle ?? string.Empty;
+            string organization = settings.OrganizationName ?? string.Empty;
+            string footer = settings.FooterText ?? string.Empty;
 
             string borderColor = GetColor(
-                settings.BorderColor, "#D4AF37");
+                settings.BorderColor,
+                "#D4AF37");
 
-            byte[]? logoBytes = null;
-            byte[]? signatureBytes = null;
+            byte[]? logoBytes = LoadImageBytes(
+                settings.ShowLogo,
+                settings.LogoPath);
 
-            // Load organization logo
-            if (settings.ShowLogo &&
-                !string.IsNullOrWhiteSpace(settings.LogoPath) &&
-                File.Exists(settings.LogoPath))
-            {
-                logoBytes = File.ReadAllBytes(settings.LogoPath);
-            }
-
-            // Load signature image
-            if (settings.ShowSignature &&
-                !string.IsNullOrWhiteSpace(settings.SignaturePath) &&
-                File.Exists(settings.SignaturePath))
-            {
-                signatureBytes = File.ReadAllBytes(
-                    settings.SignaturePath);
-            }
+            byte[]? signatureBytes = LoadImageBytes(
+                settings.ShowSignature,
+                settings.SignaturePath);
 
             Document.Create(document =>
             {
@@ -84,7 +83,7 @@ namespace CertificateGenerator
 
                     page.Content().Layers(layers =>
                     {
-                        // Border
+                        // Certificate border
                         if (settings.ShowBorder)
                         {
                             layers.PrimaryLayer()
@@ -92,8 +91,8 @@ namespace CertificateGenerator
                                 .BorderColor(borderColor);
                         }
 
-                        // Organization Logo
-                        if (settings.ShowLogo && logoBytes != null)
+                        // Organization logo
+                        if (logoBytes != null)
                         {
                             AddPositioned(
                                 layers,
@@ -108,9 +107,8 @@ namespace CertificateGenerator
                                     .FitArea());
                         }
 
-                        // Signature Image
-                        if (settings.ShowSignature &&
-                            signatureBytes != null)
+                        // Signature image
+                        if (signatureBytes != null)
                         {
                             AddPositioned(
                                 layers,
@@ -135,9 +133,7 @@ namespace CertificateGenerator
                             double signatoryDesignationY =
                                 signatoryNameY + 14;
 
-                            // Signatory name
-                            if (!string.IsNullOrWhiteSpace(
-                                settings.SignatoryName))
+                            if (!string.IsNullOrWhiteSpace(settings.SignatoryName))
                             {
                                 AddText(
                                     layers,
@@ -152,9 +148,7 @@ namespace CertificateGenerator
                                     bold: true);
                             }
 
-                            // Signatory designation
-                            if (!string.IsNullOrWhiteSpace(
-                                settings.SignatoryDesignation))
+                            if (!string.IsNullOrWhiteSpace(settings.SignatoryDesignation))
                             {
                                 AddText(
                                     layers,
@@ -169,7 +163,7 @@ namespace CertificateGenerator
                             }
                         }
 
-                        // Organization Name
+                        // Organization name
                         if (settings.ShowOrganization)
                         {
                             AddText(
@@ -179,15 +173,13 @@ namespace CertificateGenerator
                                 settings.OrganizationY,
                                 400,
                                 18,
-                                GetColor(
-                                    settings.OrganizationColor,
-                                    "#475569"),
+                                GetColor(settings.OrganizationColor, "#475569"),
                                 scaleX,
                                 scaleY,
                                 bold: true);
                         }
 
-                        // Certificate Title
+                        // Certificate title
                         if (settings.ShowTitle)
                         {
                             AddText(
@@ -197,9 +189,7 @@ namespace CertificateGenerator
                                 settings.TitleY,
                                 600,
                                 26,
-                                GetColor(
-                                    settings.TitleColor,
-                                    "#1D4ED8"),
+                                GetColor(settings.TitleColor, "#1D4ED8"),
                                 scaleX,
                                 scaleY,
                                 bold: true);
@@ -215,14 +205,12 @@ namespace CertificateGenerator
                                 settings.SubtitleY,
                                 500,
                                 15,
-                                GetColor(
-                                    settings.SubtitleColor,
-                                    "#000000"),
+                                GetColor(settings.SubtitleColor, "#000000"),
                                 scaleX,
                                 scaleY);
                         }
 
-                        // Recipient Name
+                        // Recipient name
                         if (settings.ShowRecipient)
                         {
                             AddText(
@@ -232,15 +220,13 @@ namespace CertificateGenerator
                                 settings.RecipientY,
                                 500,
                                 30,
-                                GetColor(
-                                    settings.RecipientColor,
-                                    "#B8860B"),
+                                GetColor(settings.RecipientColor, "#B8860B"),
                                 scaleX,
                                 scaleY,
                                 bold: true);
                         }
 
-                        // Course Name
+                        // Course name
                         if (settings.ShowCourse)
                         {
                             AddText(
@@ -250,15 +236,13 @@ namespace CertificateGenerator
                                 settings.CourseY,
                                 550,
                                 18,
-                                GetColor(
-                                    settings.CourseColor,
-                                    "#000000"),
+                                GetColor(settings.CourseColor, "#000000"),
                                 scaleX,
                                 scaleY,
                                 bold: true);
                         }
 
-                        // Certificate Date
+                        // Certificate date
                         if (settings.ShowDate)
                         {
                             AddText(
@@ -268,9 +252,7 @@ namespace CertificateGenerator
                                 settings.DateY,
                                 300,
                                 13,
-                                GetColor(
-                                    settings.DateColor,
-                                    "#000000"),
+                                GetColor(settings.DateColor, "#000000"),
                                 scaleX,
                                 scaleY);
                         }
@@ -285,9 +267,7 @@ namespace CertificateGenerator
                                 settings.FooterY,
                                 500,
                                 13,
-                                GetColor(
-                                    settings.FooterColor,
-                                    "#000000"),
+                                GetColor(settings.FooterColor, "#000000"),
                                 scaleX,
                                 scaleY);
                         }
@@ -302,18 +282,15 @@ namespace CertificateGenerator
                                 settings.CertificateIdY,
                                 300,
                                 11,
-                                GetColor(
-                                    settings.CertificateIdColor,
-                                    "#64748B"),
+                                GetColor(settings.CertificateIdColor, "#64748B"),
                                 scaleX,
                                 scaleY);
                         }
 
-                        // Custom Text Elements
+                        // Custom text elements
                         if (settings.CustomTextElements != null)
                         {
-                            foreach (var item in
-                                settings.CustomTextElements)
+                            foreach (var item in settings.CustomTextElements)
                             {
                                 if (item == null ||
                                     string.IsNullOrWhiteSpace(item.Text))
@@ -328,9 +305,7 @@ namespace CertificateGenerator
                                     item.Y,
                                     400,
                                     item.FontSize,
-                                    GetColor(
-                                        item.Color,
-                                        "#000000"),
+                                    GetColor(item.Color, "#000000"),
                                     scaleX,
                                     scaleY,
                                     centered: false);
@@ -338,15 +313,25 @@ namespace CertificateGenerator
                         }
                     });
                 });
-            }).GeneratePdf(outputPath);
-            System.Diagnostics.Debug.WriteLine(
-    $"PDF generated at: {outputPath}");
-
-            System.Diagnostics.Debug.WriteLine(
-                $"PDF exists: {File.Exists(outputPath)}");
+            }).GeneratePdf(fullOutputPath);
         }
 
-        // Add positioned text
+        private static byte[]? LoadImageBytes(bool shouldLoad, string? imagePath)
+        {
+            if (!shouldLoad || string.IsNullOrWhiteSpace(imagePath))
+            {
+                return null;
+            }
+
+            if (!File.Exists(imagePath))
+            {
+                return null;
+            }
+
+            // File access errors are allowed to surface so the caller can report them.
+            return File.ReadAllBytes(imagePath);
+        }
+
         private static void AddText(
             LayersDescriptor layers,
             string? text,
@@ -361,11 +346,11 @@ namespace CertificateGenerator
             bool centered = true)
         {
             if (string.IsNullOrWhiteSpace(text))
+            {
                 return;
+            }
 
-            float height = (float)Math.Max(
-                35,
-                fontSize * 2.5);
+            float height = (float)Math.Max(35, fontSize * 2.5);
 
             AddPositioned(
                 layers,
@@ -378,11 +363,9 @@ namespace CertificateGenerator
                 element =>
                 {
                     var textContainer = element.AlignTop();
-
-                    if (centered)
-                        textContainer = textContainer.AlignCenter();
-                    else
-                        textContainer = textContainer.AlignLeft();
+                    textContainer = centered
+                        ? textContainer.AlignCenter()
+                        : textContainer.AlignLeft();
 
                     var textDescriptor = textContainer
                         .Text(text)
@@ -390,11 +373,12 @@ namespace CertificateGenerator
                         .FontColor(color);
 
                     if (bold)
+                    {
                         textDescriptor.Bold();
+                    }
                 });
         }
 
-        // Add positioned elements
         private static void AddPositioned(
             LayersDescriptor layers,
             double x,
@@ -413,7 +397,6 @@ namespace CertificateGenerator
                 .Element(content);
         }
 
-        // Default text values
         private static string ValueOrDefault(
             string? value,
             string defaultValue)
@@ -423,22 +406,33 @@ namespace CertificateGenerator
                 : value;
         }
 
-        // Validate and retrieve colors
         private static string GetColor(
             string? value,
             string defaultColor)
         {
             if (string.IsNullOrWhiteSpace(value))
+            {
                 return defaultColor;
+            }
 
             string color = value.Trim();
 
-            if (!color.StartsWith("#"))
+            if (!color.StartsWith("#", StringComparison.Ordinal))
+            {
                 color = "#" + color;
+            }
 
-            return color.Length == 7
-                ? color
-                : defaultColor;
+            if (color.Length != 7 ||
+                !uint.TryParse(
+                    color.AsSpan(1),
+                    NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture,
+                    out _))
+            {
+                return defaultColor;
+            }
+
+            return color;
         }
     }
 }

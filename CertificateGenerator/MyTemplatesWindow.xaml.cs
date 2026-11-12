@@ -1,4 +1,5 @@
 ﻿
+using CertificateGenerator.Services;
 using System;
 using System.IO;
 using System.Windows;
@@ -55,6 +56,7 @@ namespace CertificateGenerator
             LoadTemplates();
         }
 
+
         private void Preview_Click(
             object sender,
             RoutedEventArgs e)
@@ -68,13 +70,12 @@ namespace CertificateGenerator
                     "My Templates",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+
                 return;
             }
 
-            // Reload templates from JSON storage
             var latestTemplates = TemplateStorage.GetTemplates();
 
-            // Find the latest saved version using the original file path
             var latestTemplate = latestTemplates.FirstOrDefault(t =>
                 string.Equals(
                     t.FilePath,
@@ -92,17 +93,14 @@ namespace CertificateGenerator
                 return;
             }
 
-            // Open preview using the latest settings
-            var preview = new TemplatePreviewWindow(
-                latestTemplate.Settings)
+            var preview = new TemplatePreviewWindow(latestTemplate.Settings)
             {
                 Owner = this
             };
 
             preview.ShowDialog();
-
-            preview.ShowDialog();
         }
+
 
         private void Edit_Click(
             object sender,

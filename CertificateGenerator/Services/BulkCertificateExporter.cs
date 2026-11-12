@@ -7,12 +7,15 @@ using System.IO.Compression;
 using System.Linq;
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
+using CertificateGenerator.Data;
+using CertificateGenerator.Models;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Services
 {
     public static class BulkCertificateExporter
     {
         private const int MaxBatchSize = 500;
+
         public static int ExportFromExcel(
             string excelPath,
             string zipPath,
@@ -54,11 +57,12 @@ namespace CertificateGenerator
                 Directory.CreateDirectory(zipDirectory);
 
             string tempFolder = Path.Combine(
-     Environment.GetFolderPath(
-         Environment.SpecialFolder.MyDocuments),
-     "CertificateGenerator");
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.MyDocuments),
+                "CertificateGenerator");
 
             Directory.CreateDirectory(tempFolder);
+
             string temporaryZipPath = Path.Combine(
                 zipDirectory ?? Path.GetTempPath(),
                 Guid.NewGuid().ToString("N") + ".zip");
@@ -70,8 +74,9 @@ namespace CertificateGenerator
                 // 5. Generate individual PDFs.
                 var usedFileNames = new HashSet<string>(
                     StringComparer.OrdinalIgnoreCase);
+
                 var generatedPdfPaths = new Dictionary<string, string>(
-    StringComparer.OrdinalIgnoreCase);
+                    StringComparer.OrdinalIgnoreCase);
 
                 foreach (var recipient in recipients)
                 {
@@ -89,14 +94,8 @@ namespace CertificateGenerator
                         suffix++;
                     }
 
-                    string folder = Path.Combine(
-     Environment.GetFolderPath(
-         Environment.SpecialFolder.MyDocuments),
-     "CertificateGenerator");
-
-                    Directory.CreateDirectory(folder);
-
-                    string pdfPath = Path.Combine(folder, fileName);
+                    string pdfPath = Path.Combine(
+                        tempFolder, fileName);
 
                     CertificatePdfGenerator.Generate(
                         recipient.Name,
@@ -105,16 +104,23 @@ namespace CertificateGenerator
                         recipient.Id,
                         pdfPath,
                         settings);
+
                     generatedPdfPaths[recipient.Id] = pdfPath;
                 }
 
-                // 6. Create ZIP in a temporary location.
+                // 6. Create ZIP containing only PDFs from this batch.
                 using (var archive = ZipFile.Open(
                     temporaryZipPath, ZipArchiveMode.Create))
                 {
-                    foreach (string pdfPath in
-                             Directory.GetFiles(tempFolder, "*.pdf"))
+                    foreach (string pdfPath in generatedPdfPaths.Values)
                     {
+                        if (!File.Exists(pdfPath))
+                        {
+                            throw new FileNotFoundException(
+                                "A generated certificate PDF could not be found.",
+                                pdfPath);
+                        }
+
                         archive.CreateEntryFromFile(
                             pdfPath,
                             Path.GetFileName(pdfPath),
@@ -122,8 +128,7 @@ namespace CertificateGenerator
                     }
                 }
 
-                // 7. Save records and publish ZIP together as closely
-                // as possible. A failed database save removes the ZIP.
+                // 7. Save records and publish ZIP.
                 using (var db = new CertificateDbContext())
                 using (var transaction = db.Database.BeginTransaction())
                 {
@@ -172,7 +177,7 @@ namespace CertificateGenerator
             }
             catch
             {
-                // Do not leave a ZIP behind if the database operation fails.
+                // Remove the final ZIP if the database operation fails.
                 if (finalZipCreated && File.Exists(fullZipPath))
                 {
                     try
@@ -190,10 +195,16 @@ namespace CertificateGenerator
             finally
             {
                 if (File.Exists(temporaryZipPath))
-                    File.Delete(temporaryZipPath);
-
-                //if (Directory.Exists(tempFolder))
-                //    Directory.Delete(tempFolder, true);
+                {
+                    try
+                    {
+                        File.Delete(temporaryZipPath);
+                    }
+                    catch
+                    {
+                        // Temporary ZIP cleanup should not hide the original result.
+                    }
+                }
             }
         }
 
@@ -303,7 +314,7 @@ namespace CertificateGenerator
         }
 
         private static void GenerateMissingIds(
-    List<Recipient> recipients)
+            List<Recipient> recipients)
         {
             int currentYear = DateTime.Today.Year;
 

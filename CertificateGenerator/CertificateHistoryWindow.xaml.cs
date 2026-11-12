@@ -1,4 +1,6 @@
 ﻿
+using CertificateGenerator.Data;
+using CertificateGenerator.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,13 +8,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace CertificateGenerator
 {
     public partial class CertificateHistoryWindow : Window
     {
         private List<CertificateRecord> _allCertificates = new();
+
         public CertificateHistoryWindow()
         {
             InitializeComponent();
@@ -35,59 +37,81 @@ namespace CertificateGenerator
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    "Could not load certificate history.\n\n" + ex.Message,
-                    "History Error",
+                    $"Unable to load certificate history.\n\n{ex.Message}",
+                    "Certificate History",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
 
-        private void RefreshButton_Click(
-            object sender, RoutedEventArgs e)
+        private void ApplySearch()
         {
-            LoadCertificates();
-            SearchTextBox.Clear();
+            string searchText = SearchTextBox.Text.Trim();
+
+            IEnumerable<CertificateRecord> filteredCertificates =
+                _allCertificates;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                filteredCertificates = _allCertificates.Where(c =>
+                    (c.CertificateId ?? string.Empty)
+                        .Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                    ||
+                    (c.RecipientName ?? string.Empty)
+                        .Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                    ||
+                    (c.CourseName ?? string.Empty)
+                        .Contains(searchText, StringComparison.OrdinalIgnoreCase));
+            }
+
+            CertificateDataGrid.ItemsSource = filteredCertificates.ToList();
         }
 
-        private void ClearSearchButton_Click(
-    object sender, RoutedEventArgs e)
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchTextBox.Clear();
+            LoadCertificates();
+        }
+
+        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
         {
             SearchTextBox.Clear();
             ApplySearch();
         }
 
         private void SearchTextBox_TextChanged(
-            object sender, TextChangedEventArgs e)
+            object sender,
+            System.Windows.Controls.TextChangedEventArgs e)
         {
             ApplySearch();
         }
 
-        private void SearchButton_Click(
-    object sender, RoutedEventArgs e)
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             ApplySearch();
-        }  
+        }
 
-        private void ApplySearch()
+        private static string? GetExistingPdfPath(CertificateRecord certificate)
         {
-            string search = SearchTextBox.Text.Trim();
+            // Prefer the actual PDF path saved with the certificate.
+            if (!string.IsNullOrWhiteSpace(certificate.PdfPath) &&
+                File.Exists(certificate.PdfPath))
+            {
+                return certificate.PdfPath;
+            }
 
-            var filteredCertificates = _allCertificates
-                .Where(c =>
-                    string.IsNullOrWhiteSpace(search) ||
-                    (c.CertificateId ?? "").Contains(
-                        search, StringComparison.OrdinalIgnoreCase) ||
-                    (c.RecipientName ?? "").Contains(
-                        search, StringComparison.OrdinalIgnoreCase) ||
-                    (c.CourseName ?? "").Contains(
-                        search, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            // Fallback for certificates created before PdfPath was saved.
+            string legacyPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "CertificateGenerator",
+                $"{certificate.CertificateId}.pdf");
 
-            CertificateDataGrid.ItemsSource = filteredCertificates;
+            return File.Exists(legacyPath) ? legacyPath : null;
         }
 
         private void PreviewSelectedButton_Click(
-    object sender, RoutedEventArgs e)
+            object sender,
+            RoutedEventArgs e)
         {
             if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
@@ -97,30 +121,17 @@ namespace CertificateGenerator
 
             try
             {
-                string pdfPath = certificate.PdfPath;
+                string? pdfPath = GetExistingPdfPath(certificate);
 
-                // Fallback for older records
-                if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
+                if (pdfPath == null)
                 {
-                    string folder = Path.Combine(
-                        Environment.GetFolderPath(
-                            Environment.SpecialFolder.MyDocuments),
-                        "CertificateGenerator");
+                    System.Windows.MessageBox.Show(
+                        "The PDF file could not be found.",
+                        "Preview Certificate",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
 
-                    string oldPath = Path.Combine(
-                        folder,
-                        $"{certificate.CertificateId}.pdf");
-
-                    if (File.Exists(oldPath))
-                    {
-                        pdfPath = oldPath;
-                    }
-                    else
-                    {
-                        System.Windows.MessageBox.Show(
-                            $"PDF not found.\n\nSaved path: {certificate.PdfPath}");
-                        return;
-                    }
+                    return;
                 }
 
                 Process.Start(new ProcessStartInfo
@@ -132,32 +143,69 @@ namespace CertificateGenerator
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    $"Could not open PDF:\n{ex.Message}");
+                    $"Unable to preview the certificate.\n\n{ex.Message}",
+                    "Preview Certificate",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void PrintSelectedButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
+            {
+                System.Windows.MessageBox.Show("Please select a certificate.");
+                return;
+            }
+
+            try
+            {
+                string? pdfPath = GetExistingPdfPath(certificate);
+
+                if (pdfPath == null)
+                {
+                    System.Windows.MessageBox.Show(
+                        "The PDF file could not be found.",
+                        "Print Certificate",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    return;
+                }
+
+                // Opens the PDF in the default application.
+                // The user can print it from there.
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = pdfPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Unable to open the certificate for printing.\n\n{ex.Message}",
+                    "Print Certificate",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
         private void DeleteSelectedButton_Click(
-    object sender, RoutedEventArgs e)
+            object sender,
+            RoutedEventArgs e)
         {
-            if (CertificateDataGrid.SelectedItem
-                is not CertificateRecord certificate)
+            if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
             {
-                System.Windows.MessageBox.Show(
-                    "Please select a certificate to delete.",
-                    "No Certificate Selected",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
+                System.Windows.MessageBox.Show("Please select a certificate.");
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
-                $"Are you sure you want to delete this certificate?\n\n" +
-                $"Certificate ID: {certificate.CertificateId}\n" +
-                $"Recipient: {certificate.RecipientName}\n" +
-                $"Course: {certificate.CourseName}\n\n" +
-                "This will remove the certificate from history.",
-                "Confirm Deletion",
+            MessageBoxResult result = System.Windows.MessageBox.Show(
+                $"Are you sure you want to remove the history record for certificate '{certificate.CertificateId}'?",
+                "Confirm Delete",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -168,17 +216,12 @@ namespace CertificateGenerator
             {
                 using var db = new CertificateDbContext();
 
-                var record = db.Certificates
+                CertificateRecord? record = db.Certificates
                     .FirstOrDefault(c => c.Id == certificate.Id);
 
                 if (record == null)
                 {
-                    System.Windows.MessageBox.Show(
-                        "Certificate record was not found.",
-                        "Delete Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-
+                    System.Windows.MessageBox.Show("The certificate record could not be found.");
                     LoadCertificates();
                     return;
                 }
@@ -186,75 +229,18 @@ namespace CertificateGenerator
                 db.Certificates.Remove(record);
                 db.SaveChanges();
 
+                System.Windows.MessageBox.Show("Certificate history record removed successfully.");
+
                 LoadCertificates();
-
-                System.Windows.MessageBox.Show(
-                    "Certificate history record deleted successfully.",
-                    "Deletion Completed",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show(
-                    "Could not delete certificate.\n\n" + ex.Message,
-                    "Delete Error",
+                    $"Unable to delete the certificate history record.\n\n{ex.Message}",
+                    "Delete Certificate",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
-        private void PrintSelectedButton_Click(
-            object sender, RoutedEventArgs e)
-        {
-            if (CertificateDataGrid.SelectedItem is not CertificateRecord certificate)
-            {
-                System.Windows.MessageBox.Show(
-                    "Please select a certificate from the history list.",
-                    "No Certificate Selected",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            try
-            {
-                string folder = Path.Combine(
-                    Environment.GetFolderPath(
-                        Environment.SpecialFolder.MyDocuments),
-                    "CertificateGenerator");
-
-                string pdfPath = Path.Combine(
-                    folder,
-                    $"{certificate.CertificateId}.pdf");
-
-                if (!File.Exists(pdfPath))
-                {
-                    System.Windows.MessageBox.Show(
-                        $"Certificate PDF not found:\n{pdfPath}",
-                        "PDF Not Found",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-
-                // Open the existing PDF using the default PDF viewer.
-                // The user can then choose Print in that application.
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = pdfPath,
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(
-                    "Could not open the certificate PDF.\n\n" + ex.Message,
-                    "Print Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-        }
-
-
     }
 }

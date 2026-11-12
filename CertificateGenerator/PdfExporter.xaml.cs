@@ -3,6 +3,7 @@ using System;
 using System.Windows;
 using Microsoft.Win32;
 using System.IO;
+using CertificateGenerator.Services;
 namespace CertificateGenerator
 {
     public partial class PdfExportWindow : Window

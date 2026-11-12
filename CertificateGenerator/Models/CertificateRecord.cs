@@ -1,7 +1,6 @@
-﻿
-using System;
+﻿using System;
 
-namespace CertificateGenerator
+namespace CertificateGenerator.Models
 {
     public class CertificateRecord
     {
